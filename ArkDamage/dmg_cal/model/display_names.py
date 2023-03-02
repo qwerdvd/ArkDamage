@@ -1,0 +1,2 @@
+class DisplayNames:
+    pass
