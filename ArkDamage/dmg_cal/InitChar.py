@@ -83,9 +83,7 @@ class InitChar(BaseModel):
         self.get_option()
         self.favor = 200
         self.get_skill_level()
-
-        if self.equip_id == 'None':
-            self.options['equip'] = False
+        self.check_uniequip()
 
     def get_phase(self) -> int:
         """
@@ -222,3 +220,19 @@ class InitChar(BaseModel):
                 self.phase = 1
             else:
                 self.phase = 0
+
+    def check_uniequip(self):
+        """
+        :说明:
+            检查是否为统一模组
+        :参数:
+            * 无
+        :返回:
+            * 无
+        """
+        if self.equip_id == 'None':
+            self.options['equip'] = False
+
+        if self.phase != 2:
+            self.equip_id = 'None'
+            self.options['equip'] = False
