@@ -15,7 +15,7 @@ from .model.models import Dur, BlackBoard
 
 
 # 计算边缘情况
-async def calc_edges(blackboard: BlackBoard, frame, dur: Dur, log):
+async def calc_edges(blackboard: BlackBoard, frame, dur: Dur, log) -> None:
     skill_id = blackboard.id
     attack_begin = await check_specs(skill_id, "attack_begin") or 12  # 抬手时间
     attack_begin = math.ceil((attack_begin - 1) * 100 / dur.attackSpeed + 1)
@@ -38,7 +38,7 @@ async def calc_edges(blackboard: BlackBoard, frame, dur: Dur, log):
     dur.remain_frame = remain_frame
 
 
-async def get_buffed_attributes(basic, buffs):
+async def get_buffed_attributes(basic, buffs) -> dict:
     final = basic.copy()
     for key in AttributeKeys:
         if key in buffs:
@@ -46,19 +46,18 @@ async def get_buffed_attributes(basic, buffs):
 
     final["atk"] *= Decimal(buffs["atk_scale"])
     final["defense"] *= Decimal(buffs["def_scale"])
-    # final["atk"] *= Decimal(buffs["damage_scale"])
+
     return final
 
 
-async def extract_damage_type(base_char_info: InitChar, char: Character, is_skill, skill_blackboard, options):
+async def extract_damage_type(base_char_info: InitChar, char: Character, is_skill, skill_blackboard, options) -> int:
     char_data = char.CharData
-    attr_char = char.attr['char']
     skill_desc = char.LevelData.description
-
     char_id = base_char_info.char_id
     sp_id = char_data.subProfessionId
     skill_id = base_char_info.skill_id
     ret = 0
+
     if char_data.profession == 'MEDIC' and sp_id != 'incantationmedic':
         ret = 2
     elif sp_id == 'bard':
@@ -77,22 +76,20 @@ async def extract_damage_type(base_char_info: InitChar, char: Character, is_skil
 
         # special character/skill overrides
         ret = await check_specs(char_id, "damage_type") or await check_specs(skill_id, "damage_type") or ret
-
         if skill_id == "skchr_nearl2_3":
             ret = 3 if options["block"] else 0
-
         if options.get("token"):
             _r = await check_specs(skill_id, "token_damage_type")
             if _r is not None:
                 ret = _r
-            if skill_id == "skchr_ling_3" and attr_char.options["ling_fusion"]:
+            if skill_id == "skchr_ling_3" and base_char_info.options.get("ling_fusion"):
                 ret = 1
+
     elif base_char_info.options.get('token'):
         ret = await check_specs(char_id, "token_damage_type") or ret
-
         if skill_id in ["skchr_mgllan_3"]:
             ret = 0
-        elif skill_id == "skchr_ling_2" or (skill_id == "skchr_ling_3" and attr_char.options["ling_fusion"]):
+        elif skill_id == "skchr_ling_2" or (skill_id == "skchr_ling_3" and base_char_info.options.get("ling_fusion")):
             ret = 1
 
     return int(ret)
@@ -100,13 +97,12 @@ async def extract_damage_type(base_char_info: InitChar, char: Character, is_skil
 
 async def calculate_attack(base_char_info: InitChar, char: Character, enemy, raid_blackboard, is_skill, log):
     display_names = char.displayNames
-    char_attr = char.attr
     char_data = char.CharData
     level_data = char.LevelData
     char_id = base_char_info.char_id
-    buff_list = char.attr['buffList']
+    buff_list = char.buffList
     blackboard = BlackBoard(buff_list['skill'])
-    basic_frame = char_attr['basic']
+    basic_frame = char.attributesKeyFrames
     options = base_char_info.options
 
     # 备注信息
@@ -145,10 +141,10 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
 
     # 泡泡
     if is_skill and blackboard.id == "skchr_bubble_2":
-        buff_frame['atk'] = basic_frame['def'] + buff_frame['def'] - basic_frame['atk']
+        buff_frame['atk'] = basic_frame['defense'] + buff_frame['defense'] - basic_frame['atk']
 
         log.write(
-            f"[特殊] {display_names['skchr_bubble_2']}: 攻击力以防御计算({basic_frame['def'] + buff_frame['def']})")
+            f"[特殊] {display_names['skchr_bubble_2']}: 攻击力以防御计算({basic_frame['defense'] + buff_frame['defense']})")
 
     # 迷迭香
     if char_id in ["char_391_rosmon", "char_1027_greyy2", "char_421_crow", "char_431_ashlok", "char_4066_highmo",
@@ -262,7 +258,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         log.write(
             f"[特殊] {display_names['tachr_204_platnm_1']}: atk_scale = {buff_frame.atk_scale:.3f} ({rate * 100:.1f}%蓄力)")
     elif buff_list.get("tachr_215_mantic_1") and attack_time >= buff_list["tachr_215_mantic_1"].delay:  # 狮蝎
-        atk = basic_frame.atk * buff_list["tachr_215_mantic_1"].atk
+        atk = basic_frame['atk'] * buff_list["tachr_215_mantic_1"].atk
         log.write(f"[特殊] {display_names['tachr_215_mantic_1']}: atk + {atk}")
         final_frame['atk'] += atk
         buff_frame['atk'] = final_frame['atk'] - basic_frame['atk']
@@ -970,7 +966,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                     elif blackboard.id == "skchr_chnut_1":
                         ep_scale = buff_list['skill']['trait_scale']
                     elif blackboard.id == "skchr_chnut_2":
-                        ep_scale = buff_list.skill["attack@heal_continuously_scale"]
+                        ep_scale = buff_list['skill']["attack@heal_continuously_scale"]
                 if buff_list["tachr_4041_chnut_1"] and options.get("cond"):
                     ep_scale *= buff_list["tachr_4041_chnut_1"]['ep_heal_scale']
                 log.write(f"元素治疗系数: {ep_ratio:.2f}x")
@@ -1116,7 +1112,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                         pool[0] += damage * dur.hitCount
                         log.write(f"[特殊] {display_names[buff_name]} 额外伤害 {damage:.1f} 命中 {dur.hitCount}")
                     else:
-                        damage = final_frame.maxHp * bb["attack@hp_ratio"]
+                        damage = final_frame['maxHp'] * bb["attack@hp_ratio"]
                         pool[2] -= damage * dur.hitCount
             case "skchr_pianst_2":
                 damage = final_frame['atk'] * bb.atk_scale * (1 - emrpct) * buff_frame.damage_scale
@@ -1245,7 +1241,6 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                 pool[1] += damage * enemy.count
                 log.write(f"落地法伤 {damage:.1f}, 命中 {enemy.count}")
             case "skchr_texas2_3":
-                print(f"final_frame: {final_frame}")
                 if not final_frame.get('damage_scale'):
                     final_frame['damage_scale'] = 1
                 texas2_s3_aoe = final_frame['atk'] * Decimal(
@@ -1259,17 +1254,17 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                 log.write(f"剑雨法伤 {damage:.1f}, 命中 {texas2_s3_target * dur.duration}")
             case "skchr_vigil_2":
                 if options.get('token'):
-                    pool[2] += final_frame.maxHp * bb["vigil_wolf_s_2.hp_ratio"]
+                    pool[2] += final_frame['maxHp'] * bb["vigil_wolf_s_2.hp_ratio"]
             case "skchr_vigil_3":
                 if options.get('cond') or options.get("token"):
                     # 计算本体属性。狼的法伤不享受特性加成
                     vigil_final_atk = final_frame['atk']
                     if options.get("token"):
-                        token_id = char_attr['char']['charId']
-                        char_attr['char']['charId'] = "char_427_vigil"
-                        vigil = await get_attributes(base_char_info, char_attr['char'], display_names, NoLog())
-                        vigil_final = await get_buffed_attributes(vigil['basic'], buff_frame)
-                        char_attr['char']['charId'] = token_id
+                        token_id = base_char_info.char_id
+                        base_char_info.char_id = "char_427_vigil"
+                        vigil = await get_attributes(base_char_info, char, NoLog())
+                        vigil_final = await get_buffed_attributes(vigil.attributesKeyFrames, buff_frame)
+                        base_char_info.char_id = token_id
                         vigil_final_atk = vigil_final['atk']
                         if not options['cond']:
                             log.write_note("必定满足阻挡条件")
@@ -1452,7 +1447,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                 damage = final_frame['atk'] * bb['aoe_scale'] * (1 - emrpct) * buff_frame['damage_scale']
                 pool[1] += damage * enemy.count
             case "skchr_qiubai_2":
-                qiubai_s2_a1 = final_frame['atk'] / buff_frame.atk_scale - bb.atk * basic_frame.atk
+                qiubai_s2_a1 = final_frame['atk'] / buff_frame.atk_scale - bb.atk * basic_frame['atk']
                 qiubai_s2_a2 = final_frame['atk'] / buff_frame.atk_scale * bb.sword_end_atk_scale
                 qiubai_s2_d1 = qiubai_s2_a1 * bb.sword_begin_atk_scale * (1 - emrpct) * buff_frame.damage_scale
                 qiubai_s2_d2 = max(qiubai_s2_a2 - edef, qiubai_s2_a2 * 0.05) * buff_frame.damage_scale
@@ -1489,12 +1484,12 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                 if not is_skill:
                     aurora_hp_time = level_data.spData.spCost / (
                             (1 + buff_frame.spRecoveryPerSec) * (1 + buff_frame.spRecoverRatio)) / 2 + dur.stunDuration
-                    aurora_hps = hpratiosec * final_frame.maxHp
+                    aurora_hps = hpratiosec * final_frame['maxHp']
                     pool[2] += aurora_hps * aurora_hp_time
                     log.write(f"HP恢复时间: {aurora_hp_time}s, HPS {aurora_hps}")
             elif buff_name == "skchr_blkngt_1":
                 if is_skill and options.get('token'):
-                    blkngt_hps = hpratiosec * final_frame.maxHp
+                    blkngt_hps = hpratiosec * final_frame['maxHp']
                     log.write_note(f"HPS: {blkngt_hps}")
                 # else {}
             else:
@@ -1553,13 +1548,8 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
     log.write(f"DPS: {dps}, HPS: {hps}")
     log.write("----")
 
-    atk = final_frame['atk']
-    max_target = ecount
-    attack_count = dur.attackCount
-    sp_type = level_data.spData.spType
-
     return {
-        'atk': atk,
+        'atk': final_frame['atk'],
         'dps': dps,
         'hps': hps,
         'dur': dur,
@@ -1570,11 +1560,11 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         'extraHeal': extra_heal,
         'totalDamage': total_damage,
         'totalHeal': total_heal,
-        'maxTarget': max_target,
+        'maxTarget': ecount,
         'damagePool': damage_pool,
         'extraDamagePool': extra_damage_pool,
         'attackTime': attack_time,
         'frame': frame,
-        'attackCount': attack_count,
-        'spType': sp_type,
+        'attackCount': dur.attackCount,
+        'spType': level_data.spData.spType,
     }

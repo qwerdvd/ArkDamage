@@ -1,4 +1,4 @@
-from ...dmg_cal.load_json import CharacterId_and_chName_data
+from ...dmg_cal.load_json import character_id_and_ch_name_data
 
 
 async def ch_name_to_character_id(name: str) -> str:
@@ -11,8 +11,8 @@ async def ch_name_to_character_id(name: str) -> str:
         * avatar_id (str): 角色ID。
     """
     character_id = ""
-    for i in CharacterId_and_chName_data:
-        if CharacterId_and_chName_data[i] == name:
+    for i in character_id_and_ch_name_data:
+        if character_id_and_ch_name_data[i] == name:
             character_id = i
             break
     return character_id

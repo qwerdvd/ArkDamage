@@ -36,23 +36,8 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     char = Character(base_char_info)
     enemy = Enemy({'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0})
     dps = await calculate_dps(base_char_info, char, enemy)
-    if not await check_specs(base_char_info.skill_id, "overdrive"):
-        forward_msg = [
-            f"干员：{char.CharData.name}",
-            f"稀有度：{base_char_info.rarity + 1} ★",
-            f"精英化：{base_char_info.phase}",
-            f"等级：{base_char_info.level}",
-            f"技能：{dps['skillName']}",
-            f"技能等级：{base_char_info.skillLevel}",
-            f"模组：{base_char_info.equip_id}",
-            f"攻击力：{dps['skill']['atk']:.2f}",
-            f"攻击次数：{dps['skill']['dur'].hitCount}",
-            f"技能伤害：{float(dps['skill']['totalDamage']):.2f}",
-            f"持续时间：{dps['skill']['dur'].duration}",
-            f"技能DPS：{float(dps['skill']['dps']):.2f}",
-            f"技能HPS：{float(dps['skill']['hps']):.2f}"
-        ]
-    else:
+    print(dps['log'])
+    if await check_specs(base_char_info.skill_id, "overdrive"):  # 过载
         forward_msg = [
             f"干员：{char.CharData.name}",
             f"稀有度：{base_char_info.rarity + 1} ★"
@@ -68,6 +53,38 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
             f"技能DPS：{float(dps['skill']['dps']):.2f}",
             f"技能HPS：{float(dps['skill']['hps']):.2f}"
         ]
+    elif await check_specs(base_char_info.skill_id, "token"):  # 召唤物
+        forward_msg = [
+            f"干员：{char.CharData.name}",
+            f"稀有度：{base_char_info.rarity + 1} ★"
+            f"精英化：{base_char_info.phase}",
+            f"等级：{base_char_info.level}",
+            f"技能：{dps['skillName']}",
+            f"技能等级：{base_char_info.skillLevel}",
+            f"模组：{base_char_info.equip_id}",
+            f"攻击力：{dps['skill']['atk']:.2f}",
+            f"攻击次数：{dps['skill']['dur']['hitCount']}",
+            f"技能伤害：{float(dps['skill']['totalDamage']):.2f}",
+            f"持续时间：{dps['skill']['dur']['duration']}",
+            f"技能DPS：{float(dps['skill']['dps']):.2f}",
+            f"技能HPS：{float(dps['skill']['hps']):.2f}"
+        ]
+    else:
+        forward_msg = [
+            f"干员：{char.CharData.name}",
+            f"稀有度：{base_char_info.rarity + 1} ★",
+            f"精英化：{base_char_info.phase}",
+            f"等级：{base_char_info.level}",
+            f"技能：{dps['skillName']}",
+            f"技能等级：{base_char_info.skillLevel}",
+            f"模组：{base_char_info.equip_id}",
+            f"攻击力：{dps['skill']['atk']:.2f}",
+            f"攻击次数：{dps['skill']['dur'].hitCount}",
+            f"技能伤害：{float(dps['skill']['totalDamage']):.2f}",
+            f"持续时间：{dps['skill']['dur'].duration}",
+            f"技能DPS：{float(dps['skill']['dps']):.2f}",
+            f"技能HPS：{float(dps['skill']['hps']):.2f}"
+        ]
     await send_forward_msg(bot, event.group_id, "小小小小真寻", "2673918369", forward_msg)
 
 
@@ -77,6 +94,7 @@ async def test(message_list: list):
     char = Character(base_char_info)
     enemy = Enemy({'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0})
     dps = await calculate_dps(base_char_info, char, enemy)
+    print(dps['log'])
 
 
 if __name__ == "__main__":

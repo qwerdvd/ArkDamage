@@ -11,13 +11,13 @@ async def apply_buff(
         blackbd, is_skill, is_crit, log, enemy
 ) -> dict:
     display_names = char.displayNames
-    char_attr = char.attr
+    # char_attr = char.attr
 
     buff_frame = buff_frm if buff_frm else init_buff_frame()
     blackboard = BlackBoard(blackbd)
-    basic = char_attr['basic']
+    basic = char.attributesKeyFrames
     char_id = base_char_info.char_id
-    skill_id = char_attr['buffList']['skill']['id']
+    skill_id = char.buffList['skill']['id']
     options = base_char_info.options
 
     # 如果是技能期间，则取得技能ID, 否则不计算技能
@@ -61,15 +61,15 @@ async def apply_buff(
         for tuple_item in blackboard:
             key = tuple_item[0]
             match key:
-                case "atk" | "def":
+                case "atk" | "defense":
                     prefix = "+" if getattr(blackboard, key) > 0 else ""
-                    buff_frame[key] = Decimal(buff_frame[key]) + basic[key] * Decimal(
-                        getattr(blackboard, key))
+                    buff_frame[key] = Decimal(buff_frame[key]) + basic[key] * Decimal(getattr(blackboard, key))
                     if getattr(blackboard, key) != 0:
                         await write_buff(
                             f"{key}: "
                             f"{prefix}{(getattr(blackboard, key) * 100):.1f}% "
-                            f"({prefix}{(basic[key] * Decimal(getattr(blackboard, key))):.1f})")
+                            f"({prefix}{(basic[key] * Decimal(getattr(blackboard, key))):.1f})"
+                        )
                 case "max_hp":
                     prefix = "+" if getattr(blackboard, key) > 0 else ""
                     if abs(getattr(blackboard, key)) > 2:  # 加算
@@ -81,7 +81,8 @@ async def apply_buff(
                         await write_buff(
                             f"{key}: "
                             f"{prefix}{getattr(blackboard, key) * 100:.1f}% "
-                            f"({prefix}{basic['maxHp'] * Decimal(getattr(blackboard, key)):.1f})")
+                            f"({prefix}{basic['maxHp'] * Decimal(getattr(blackboard, key)):.1f})"
+                        )
                 case "base_attack_time":
                     if blackboard.base_attack_time < 0:  # 攻击间隔缩短 - 加算
                         buff_frame['baseAttackTime'] += blackboard.base_attack_time
@@ -92,7 +93,8 @@ async def apply_buff(
                             blackboard.base_attack_time)
                         await write_buff(
                             f"base_attack_time: "
-                            f"+{(basic['baseAttackTime'] * Decimal(blackboard.base_attack_time)):.3f}s")
+                            f"+{(basic['baseAttackTime'] * Decimal(blackboard.base_attack_time)):.3f}s"
+                        )
                 case "attack_speed":
                     if getattr(blackboard, key) != 0:
                         prefix = "+" if getattr(blackboard, key) > 0 else ""
@@ -246,7 +248,7 @@ async def apply_buff(
                 case 'tachr_187_ccheal_1':  # 贾维尔
                     buff_frame['defense'] += blackboard.defense
                     blackboard.defense = 0
-                    await write_buff(f"def +{buff_frame['defense']}")
+                    await write_buff(f"defense +{buff_frame['defense']}")
                 case 'tachr_145_prove_1':
                     blackboard.prob_override = blackboard.value('prob2')
                 case 'tachr_333_sidero_1':
@@ -276,7 +278,7 @@ async def apply_buff(
                     blackboard.heal_scale = blackboard.value('heal_scale_2')
                 case "tachr_457_blitz_1":
                     if is_skill and skill_id == 'skchr_blitz_2':
-                        blackboard.atk_scale *= char_attr['buffList']['skill']['talent_scale']
+                        blackboard.atk_scale *= char.buffList['skill']['talent_scale']
                 case "tachr_472_pasngr_1":
                     blackboard.damage_scale = blackboard.value("pasngr_t_1[enhance].damage_scale")
                 case "tachr_1012_skadi2_2":
@@ -319,8 +321,8 @@ async def apply_buff(
                     blackboard.atk_scale = blackboard.value('atk_scale_up')
                     log.write_note("周围有3个敌人")
                 case "tachr_363_toddi_1":
-                    if char_attr['buffList']["uniequip_002_toddi"] and base_char_info.equipLevel >= 2:
-                        blackboard.atk_scale = char_attr['buffList']['uniequip_002_toddi']['talent']['atk_scale']
+                    if char.buffList["uniequip_002_toddi"] and base_char_info.equipLevel >= 2:
+                        blackboard.atk_scale = char.buffList['uniequip_002_toddi']['talent']['atk_scale']
                 case "tachr_4062_totter_1":
                     del blackboard.atk_scale
                 case "tachr_2024_chyue_1":
@@ -342,7 +344,7 @@ async def apply_buff(
                 case "tachr_188_helage_1" | "tachr_337_utage_1" | "tachr_475_akafyu_1":
                     blackboard.attack_speed = blackboard.value('min_attack_speed')
             if not done and blackboard.get('max_stack_cnt'):
-                for key in ["atk", "def", "attack_speed", "max_hp"]:
+                for key in ["atk", "defense", "attack_speed", "max_hp"]:
                     if blackboard.get('key'):
                         old_value = getattr(blackboard, key)
                         value = old_value * blackboard.value('max_stack_cnt')
@@ -380,9 +382,9 @@ async def apply_buff(
                     blackboard.atk = 0
                     log.write_note("抽攻速卡")
             case "tachr_147_shining_1":  # 闪灵
-                await write_buff(f"def +{blackboard.value('def')}")
-                buff_frame['def'] += blackboard.value('def')
-                blackboard.update('def', 0)
+                await write_buff(f"defense +{blackboard.value('defense')}")
+                buff_frame['defense'] += blackboard.value('defense')
+                blackboard.update('defense', 0)
             case "tachr_367_swllow_1":  # 灰喉
                 blackboard.attack_speed = 0  # 特判已经加了
             case "tachr_279_excu_1" | "tachr_391_rosmon_1" | "skchr_pinecn_1":  # 送葬
@@ -397,7 +399,7 @@ async def apply_buff(
             case "tachr_106_franka_1":  # 芙兰卡
                 blackboard.edef_pene_scale = 1
                 if is_skill and skill_id == 'skchr_franka_2':
-                    blackboard.prob_override = blackboard.value('prob') * char_attr['buffList']['skill']['talent_scale']
+                    blackboard.prob_override = blackboard.value('prob') * char.buffList['skill']['talent_scale']
             case "tachr_4009_irene_1":
                 blackboard.edef_pene_scale = blackboard.value('def_penetrate')
             case "tachr_155_tiger_1":
@@ -405,8 +407,8 @@ async def apply_buff(
                 blackboard.atk = blackboard.value('charge_on_evade.atk')
             case "tachr_340_shwaz_1":
                 if is_skill:
-                    blackboard.prob_override = char_attr['buffList']['skill']['talent@prob']
-                blackboard.edef_scale = blackboard.value('def')
+                    blackboard.prob_override = char.buffList['skill']['talent@prob']
+                blackboard.edef_scale = blackboard.value('defense')
                 blackboard.delete('defense')
             case "tachr_225_haak_1":
                 blackboard.prob_override = 0.25
@@ -623,8 +625,8 @@ async def apply_buff(
                     buff_frame['atk_scale'] = 1
                     if is_skill:
                         log.write_note("技能不受距离惩罚")
-                blackboard.def_scale = 1 + blackboard.value("def")
-                blackboard.delete("def")
+                blackboard.def_scale = 1 + blackboard.value("defense")
+                blackboard.delete("defense")
             case "skchr_ceylon_1":
                 if options.get('ranged_penalty'):
                     buff_frame['atk_scale'] /= 0.7
@@ -644,7 +646,7 @@ async def apply_buff(
                 blackboard.edef_scale = blackboard.defense
                 blackboard.defense = 0
             case "skchr_ifrit_2":
-                blackboard.edef = blackboard.value('def')
+                blackboard.edef = blackboard.value('defense')
                 blackboard.defense = 0
             case "skchr_nian_3":
                 blackboard.atk = blackboard.value("nian_s_3[self].atk")
@@ -672,7 +674,7 @@ async def apply_buff(
                 buff_frame['damage_scale'] = 1 + (buff_frame['damage_scale'] - 1) * \
                                              blackboard.value('scale_delta_to_one')
             case "skchr_elysm_2":
-                del blackboard["def"]
+                del blackboard["defense"]
                 del blackboard["max_target"]
             case "skchr_asbest_1":
                 del blackboard["damage_scale"]
@@ -694,7 +696,7 @@ async def apply_buff(
                 del blackboard.atk
             case "tachr_265_sophia_1":
                 if is_skill:
-                    ts = char_attr['buffList']["skill"]['talent_scale']
+                    ts = char.buffList["skill"]['talent_scale']
                     if skill_id == "skchr_sophia_1":
                         blackboard.defense = blackboard.value("sophia_t_1_less.def") * ts
                         blackboard.attack_speed = blackboard.value("sophia_t_1_less.attack_speed") * ts
@@ -716,8 +718,8 @@ async def apply_buff(
                 del blackboard["attack@times"]
             case "tachr_1001_amiya2_1":
                 if is_skill:
-                    blackboard.atk *= char_attr['buffList']["skill"]['talent_scale']
-                    blackboard.defense *= char_attr['buffList']["skill"]['talent_scale']
+                    blackboard.atk *= char.buffList["skill"]['talent_scale']
+                    blackboard.defense *= char.buffList["skill"]['talent_scale']
             case "skchr_amiya2_2":
                 del blackboard.times
                 del blackboard.atk_scale
@@ -972,7 +974,7 @@ async def apply_buff(
                 if options.get('stack'):
                     blackboard.atk *= 2
                     if skill_id == "skchr_windft_2" and is_skill:
-                        blackboard.atk *= char_attr['buffList']["skill"]['talent_scale']
+                        blackboard.atk *= char.buffList["skill"]['talent_scale']
                         log.write_note(f"装备2个装置\n攻击力提升比例:{(blackboard.atk * 100).toFixed(1)} % ")
                 else:
                     done = True
@@ -1030,8 +1032,8 @@ async def apply_buff(
                     ecount = min(enemy.count, gvial2_blk)
                     atk_add = blackboard.value('atk_add') * ecount
                     blackboard.atk += atk_add
-                    value = blackboard.value('def') + atk_add
-                    blackboard.update('def', value)
+                    value = blackboard.value('defense') + atk_add
+                    blackboard.update('defense', value)
                     await write_buff(f"阻挡数: {ecount}, 额外加成 +{atk_add}")
                     log.write_note(f"按阻挡{ecount}个敌人计算")
             case "skchr_gvial2_3":
@@ -1072,7 +1074,7 @@ async def apply_buff(
             case "tachr_4064_mlynar_trait":
                 atk_rate = 1 if options.get('stack') else 0.5
                 if is_skill and skill_id == "skchr_mlynar_3":
-                    atk_rate *= char_attr['buffList']["skill"]['trait_up']
+                    atk_rate *= char.buffList["skill"]['trait_up']
                 blackboard.atk *= atk_rate
                 log.write_note(f"以 {round(blackboard.atk * 100)} % 计算特性 ")
             case "skchr_mlynar_3":
@@ -1085,7 +1087,7 @@ async def apply_buff(
                     else:
                         log.write_note("触发抵挡加攻")
             case "tachr_325_bison_1":
-                char_attr['basic']['defense'] += blackboard.defense
+                char.attributesKeyFrames['defense'] += blackboard.defense
                 await write_buff(f"防御力直接加算: +{blackboard.defense}")
                 done = True
             case "skchr_lolxh_1":
@@ -1112,7 +1114,7 @@ async def apply_buff(
                     blackboard.atk_scale = blackboard.value('atk_up_max_value')
                     log.write_note("爆伤叠满")
                 if is_skill and skill_id == "skchr_dagda_2":
-                    blackboard.prob_override = char_attr['buffList']['skill']["talent@prob"]
+                    blackboard.prob_override = char.buffList['skill']["talent@prob"]
             case "skchr_quartz_2":
                 del blackboard.damage_scale
                 if options.get('crit'):
@@ -1349,12 +1351,12 @@ async def apply_buff(
         case "uniequip_003_zumama":
             if options.get('block'):
                 blackboard.atk = blackboard.trait['atk']
-                blackboard.defense = blackboard.trait['def']
+                blackboard.defense = blackboard.trait['defense']
         case "uniequip_002_nian":
-            blackboard.defense = blackboard.trait['def'] if options.get('block') else 0
+            blackboard.defense = blackboard.trait['defense'] if options.get('block') else 0
             if blackboard.talent.get('atk'):
                 blackboard.atk = blackboard.talent['atk'] * blackboard.talent['max_stack_cnt']
-                blackboard.defense += blackboard.talent['def'] * blackboard.talent['max_stack_cnt']
+                blackboard.defense += blackboard.talent['defense'] * blackboard.talent['max_stack_cnt']
                 log.write_note("按模组效果叠满计算")
         case "uniequip_002_bison" | "uniequip_002_bubble" | "uniequip_002_snakek":
             if options.get('block'):

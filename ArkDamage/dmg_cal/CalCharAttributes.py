@@ -86,19 +86,19 @@ async def get_blackboard(blackboard_array) -> dict:
 async def get_dict_blackboard(blackboard_array) -> dict:
     blackboard = {}
     for item in blackboard_array:
+        if item['key'] == "def":
+            item['key'] = "defense"
         blackboard[item['key']] = item['value']
     return blackboard
 
 
 async def apply_equip(char: Character, base_char_info: InitChar, basic: dict, log) -> dict:
     equip_id = base_char_info.equip_id
-    # bedb = char.UniEquipData
     phase = base_char_info.equipLevel - 1
     # cand = 0
     blackboard = {}
     attr = {}
-    # phase = int(base_char_info.equip_id.split('_')[1][-1])
-    # blackboard = {}
+
     if equip_id and char.UniEquipData is not None:
         item = char.UniEquipData.phases[phase]
         attr = await get_blackboard(char.UniEquipData.phases[phase].attributeBlackboard)
@@ -122,8 +122,6 @@ async def apply_equip(char: Character, base_char_info: InitChar, basic: dict, lo
                     if base_char_info.potentialRank >= talent_bundle["candidates"][cand]["requiredPotentialRank"]:
                         break
                     cand -= 1
-                # print(f"talent_bundle['candidates'][cand]['blackboard']:
-                # {talent_bundle['candidates'][cand]['blackboard']}")
                 result = await get_dict_blackboard(talent_bundle['candidates'][cand]['blackboard'])
                 talents.update(result)
 
@@ -161,48 +159,40 @@ async def apply_equip(char: Character, base_char_info: InitChar, basic: dict, lo
                     f"{attr_keys[x]} {basic[attr_keys[x]] - Decimal(attr[x])} -> "
                     f"{basic[attr_keys[x]]} (+{Decimal(attr[x])})")
     basic['equip_blackboard'] = blackboard
-    # print(basic)
 
     return basic
 
 
-async def get_attributes(base_char_info: InitChar, char: Character, display_names, log):
-    # char_data = char.CharData
+async def get_attributes(base_char_info: InitChar, char: Character, log) -> Character:
     phase_data = char.CharData.phases[base_char_info.phase]
-    attributes_key_frames = {}
-    buffs = init_buff_frame()
-    buff_list = {}
+    display_names = char.displayNames
     if base_char_info.char_id.startswith('token'):
         log.write("【召唤物属性】")
     else:
         log.write("【基础属性】")
     log.write("----")
     # 计算基础属性，包括等级和潜能
-    # attributesKeyFrames = await calBasicAttributes(base_char_info, char)
-    #
-    if base_char_info.level == char.CharData.phases[base_char_info.phase].maxLevel:
-        attributes_key_frames.update(phase_data.attributesKeyFrames[1].data)
+    if base_char_info.level == phase_data.maxLevel:
+        char.attributesKeyFrames.update(phase_data.attributesKeyFrames[1].data)
     else:
         for key in AttributeKeys:
-            attributes_key_frames[key] = \
+            char.attributesKeyFrames[key] = \
                 await get_attribute(phase_data.attributesKeyFrames, base_char_info.level, 1, key)
 
     if char.CharData.favorKeyFrames and char.CharData.profession != "TOKEN":
         favor_level = Decimal(math.floor(min(base_char_info.favor, 100) / 2))
         for key in AttributeKeys:
-            attributes_key_frames[key] = Decimal(attributes_key_frames[key])
-            attributes_key_frames[key] += await get_attribute(char.CharData.favorKeyFrames, favor_level, 0, key)
-            # print(char.level, key, attributesKeyFrames[key])
-            buffs[key] = 0
+            char.attributesKeyFrames[key] = Decimal(char.attributesKeyFrames[key])
+            char.attributesKeyFrames[key] += await get_attribute(char.CharData.favorKeyFrames, favor_level, 0, key)
+            char.buffs[key] = 0
 
     # 计算潜能
-    attributes_key_frames = await apply_potential(char.CharData, base_char_info.potentialRank,
-                                                  attributes_key_frames, log)
-    # applyPotential(charData: dict, rank: int, basic: dict, log)
+    char.attributesKeyFrames = await apply_potential(char.CharData, base_char_info.potentialRank,
+                                                     char.attributesKeyFrames, log)
     # 计算模组
     if base_char_info.equip_id and base_char_info.phase >= 2:
-        attributes_key_frames = await apply_equip(char, base_char_info, attributes_key_frames, log)
-        buff_list[base_char_info.equip_id] = attributes_key_frames['equip_blackboard']
+        char.attributesKeyFrames = await apply_equip(char, base_char_info, char.attributesKeyFrames, log)
+        char.buffList[base_char_info.equip_id] = char.attributesKeyFrames['equip_blackboard']
 
     # 计算天赋/特性，记为Buff
     if char.CharData.trait and not char.CharData.get('has_trait'):
@@ -225,36 +215,28 @@ async def get_attributes(base_char_info: InitChar, char: Character, display_name
                         display_names[prefab_key] = cd.name  # add to name cache
 
                         # 如果天赋被模组修改，覆盖对应面板
-                        if attributes_key_frames.get('equip_blackboard'):
-                            ebb = attributes_key_frames['equip_blackboard']
+                        if char.attributesKeyFrames.get('equip_blackboard'):
+                            ebb = char.attributesKeyFrames['equip_blackboard']
                             if ebb['override_talent'] == cd.prefabKey:
                                 tb = ebb['talent']
                                 for k in ebb['remove_keys']:
                                     del tb[k]
-                                # print({'cd': cd, 'old': blackboard, 'new': tb})
                                 for k in tb:
                                     blackboard[k] = tb[k]
                                 log.write(f"[模组] 强化天赋 - {cd.name}: {blackboard}")
                             if cd.prefabKey == "trait" and ebb.get('override_trait'):
                                 tb = ebb['trait']
-                                # print({'cd': cd, 'old': blackboard, 'new': tb})
                                 for k, v in tb.items():
                                     blackboard[k] = v
                                 log.write(f"[模组] 强化特性: {blackboard}")
                         # bufflist处理
-                        buff_list[prefab_key] = blackboard
+                        char.buffList[prefab_key] = blackboard
                         break
 
     # 令3
     if base_char_info.skill_id == 'skchr_ling_3' and base_char_info.options.get(
             'ling_fusion') and base_char_info.options.get('token'):
         log.write("“弦惊” - 高级形态: 添加合体Buff")
-        buff_list["fusion_buff"] = await check_specs(base_char_info.skill_id, "fusion_buff")
+        char.buffList["fusion_buff"] = await check_specs(base_char_info.skill_id, "fusion_buff")
 
-    return {
-        'basic': attributes_key_frames,
-        'buffs': buffs,
-        'buffList': buff_list,
-        'char': char,
-        'displayNames': display_names
-    }
+    return char

@@ -43,7 +43,7 @@ def init_buff_frame():
         'emr': 0,
         'emr_scale': 1,
         'atk': 0,
-        'def': 0,
+        'defense': 0,
         'attackSpeed': 0,
         'maxHp': 0,
         'baseAttackTime': 0,
@@ -67,7 +67,7 @@ class Character(Attributes):
     SkillData: SkillData
     LevelData: SkillLevelData
     UniEquipData: Union[UniequipData, None]
-    attr: dict = {}
+    skillId: str = ''
     blackboard: dict = {}
     attributesKeyFrames: dict = {}
     buffs: dict = {}
@@ -82,7 +82,6 @@ class Character(Attributes):
         self.attributesKeyFrames = {}
         self.buffs = init_buff_frame()
         self.buffList = {}
-
         self.SkillData = SkillData(skill_table[base_char_info.skill_id])
         self.LevelData = self.SkillData.levels[base_char_info.skillLevel]
         if base_char_info.equip_id in battle_equip_table.keys():

@@ -67,7 +67,11 @@ class BlackBoard:
     def __init__(self, data: dict):
         for items in data:
             if 'builtin_function_or_method' not in str(type(items)):
-                setattr(self, items, data[items])
+                print(items, data[items])
+                if items == "def":
+                    setattr(self, "defense", data[items])
+                else:
+                    setattr(self, items, data[items])
 
     def __iter__(self):
         return iter(self.__dict__.items())
