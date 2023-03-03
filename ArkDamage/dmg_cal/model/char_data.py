@@ -150,7 +150,7 @@ class CharacterData(BaseModel):
     description: str
     canUseGeneralPotentialItem: bool
     canUseActivityPotentialItem: bool
-    potentialItemId: str
+    potentialItemId: Union[str, None]
     activityPotentialItemId: Union[str, None]
     nationId: str
     groupId: Union[str, None]
