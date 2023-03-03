@@ -3,12 +3,12 @@ import math
 from decimal import Decimal
 
 from . import InitChar
-from .CalCharAttributes import check_specs, get_attributes
-from .Character import init_buff_frame, AttributeKeys, Character
 from .ApplyBuff import apply_buff
 from .CalAnimation import calculate_animation
+from .CalCharAttributes import check_specs, get_attributes
 from .CalDurations import calc_durations, check_reset_attack
 from .CalGradDamage import calculate_grad_damage
+from .Character import init_buff_frame, AttributeKeys, Character
 from .load_json import battle_equip_table
 from .log import NoLog
 from .model.models import Dur, BlackBoard
@@ -1164,7 +1164,6 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
             case "tachr_4064_mlynar_2":
                 mlynar_t2_scale = bb['atk_scale']
                 if is_skill and blackboard.id == "skchr_mlynar_3":
-                    print(buff_list['skill'])
                     mlynar_t2_scale += buff_list["skill"]['atk_scale']
                     log.write_note("额外真伤对反弹也生效")
                 damage = final_frame['atk'] / Decimal(buff_frame['atk_scale']) * Decimal(
@@ -1422,9 +1421,6 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                                 log.write_note("不计第一天赋伤害")
                             if buff_list['skill']['talent_scale']:
                                 talent_scale = buff_list['skill']['talent_scale']
-                    # damage = finalFrame['atk'] / buffFrame['atk_scale'] * Decimal(bb['atk_scale']) *
-                    # Decimal(talent_scale) * Decimal(1-emrpct) * Decimal(buffFrame[
-                    # 'damage_scale'])
                     damage_atk = final_frame['atk'] / buff_frame['atk_scale'] * Decimal(
                         bb['atk_scale']) * Decimal(talent_scale) * Decimal(
                         1 - emrpct) * Decimal(buff_frame['damage_scale'])
@@ -1522,7 +1518,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
 
     # 整理返回
     total_damage = sum(Decimal(damage_pool[i]) + Decimal(extra_damage_pool[i]) for i in [0, 1, 3])
-    total_heal = sum(damage_pool[i] + extra_damage_pool[i] for i in [2, 4])
+    total_heal = sum(Decimal(damage_pool[i]) + Decimal(extra_damage_pool[i]) for i in [2, 4])
     extra_damage = sum(extra_damage_pool[i] for i in [0, 1, 3])
     extra_heal = sum(extra_damage_pool[i] for i in [2, 4])
 

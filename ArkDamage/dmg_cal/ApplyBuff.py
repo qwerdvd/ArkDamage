@@ -11,8 +11,6 @@ async def apply_buff(
         blackbd, is_skill, is_crit, log, enemy
 ) -> dict:
     display_names = char.displayNames
-    # char_attr = char.attr
-
     buff_frame = buff_frm if buff_frm else init_buff_frame()
     blackboard = BlackBoard(blackbd)
     basic = char.attributesKeyFrames
@@ -1267,7 +1265,6 @@ async def apply_buff(
                     'prob1']
         case "uniequip_002_chen" | "uniequip_002_tachak" | "uniequip_002_bibeak":
             if not is_skill:
-                print(f"blackboard_chen: {blackboard}")
                 del blackboard.trait['damage_scale']
         case ("uniequip_002_cutter" | "uniequip_002_phenxi" | "uniequip_002_meteo"
               | "uniequip_002_irene" | "uniequip_002_bdhkgt"):

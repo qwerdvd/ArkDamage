@@ -2,7 +2,7 @@ import math
 from decimal import Decimal
 
 from . import Character, InitChar
-from .Character import AttributeKeys, init_buff_frame
+from .Character import AttributeKeys
 from .load_json import specs
 from .model.char_data import CharacterData
 from ..utils.math_model import get_attribute

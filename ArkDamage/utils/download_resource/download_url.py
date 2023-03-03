@@ -1,9 +1,9 @@
 from typing import Tuple, Optional
 
 import aiofiles
-from nonebot.log import logger
 from aiohttp.client import ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
+from nonebot.log import logger
 
 from .RESOURCE_PATH import (
     DPS_ANIMATION_PATH,

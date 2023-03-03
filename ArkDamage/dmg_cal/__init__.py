@@ -1,15 +1,14 @@
 from nonebot import on_command, logger
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
 from nonebot.params import CommandArg
-
-from ..resource.check_version import get_ark_version
 from nonebot_plugin_apscheduler import scheduler
+
 from .CalCharAttributes import check_specs
 from .CalDps import calculate_dps
 from .Character import Character
 from .InitChar import InitChar, handle_mes
 from .model.models import Enemy
-
+from ..resource.check_version import get_ark_version
 from ..utils.message.send_msg import send_forward_msg
 
 dmg_cal = on_command("伤害计算", priority=5, block=True)
@@ -36,11 +35,10 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     char = Character(base_char_info)
     enemy = Enemy({'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0})
     dps = await calculate_dps(base_char_info, char, enemy)
-    print(dps['log'])
     if await check_specs(base_char_info.skill_id, "overdrive"):  # 过载
         forward_msg = [
             f"干员：{char.CharData.name}",
-            f"稀有度：{base_char_info.rarity + 1} ★"
+            f"稀有度：{base_char_info.rarity + 1} ★",
             f"精英化：{base_char_info.phase}",
             f"等级：{base_char_info.level}",
             f"技能：{dps['skillName']}",
@@ -56,7 +54,7 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     elif await check_specs(base_char_info.skill_id, "token"):  # 召唤物
         forward_msg = [
             f"干员：{char.CharData.name}",
-            f"稀有度：{base_char_info.rarity + 1} ★"
+            f"稀有度：{base_char_info.rarity + 1} ★",
             f"精英化：{base_char_info.phase}",
             f"等级：{base_char_info.level}",
             f"技能：{dps['skillName']}",

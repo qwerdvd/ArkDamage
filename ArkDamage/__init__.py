@@ -1,8 +1,8 @@
 from pathlib import Path
 from pkgutil import iter_modules
 
-from nonebot.log import logger
 from nonebot import require, load_all_plugins, get_plugin_by_module_name
+from nonebot.log import logger
 
 require('nonebot_plugin_apscheduler')
 

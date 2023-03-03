@@ -1,23 +1,20 @@
-import asyncio
-import threading
 from typing import Union
 
 from nonebot import on_command
-from nonebot.log import logger
-from nonebot.matcher import Matcher
-from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GroupMessageEvent,
     PrivateMessageEvent,
 )
+from nonebot.matcher import Matcher
+from nonebot.permission import SUPERUSER
 
 from .check_version import get_ark_version
-from ..utils.nonebot2.rule import FullCommand
-from ..utils.exception.handle_exception import handle_exception
 from ..utils.download_resource.download_all_resource import (
     download_all_resource,
 )
+from ..utils.exception.handle_exception import handle_exception
+from ..utils.nonebot2.rule import FullCommand
 
 download_resource = on_command('下载全部资源', rule=FullCommand())
 

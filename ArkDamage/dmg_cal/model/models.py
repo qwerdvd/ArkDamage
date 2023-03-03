@@ -23,19 +23,8 @@ class Dur(BaseModel):
         if data is not None:
             for key, value in data.items():
                 setattr(self, key, value)
-        # self.attackCount = data['attackCount']
-        # self.attackSpeed = data['attackSpeed']
-        # self.times = data['times']
-        # self.hitCount = data['hitCount']
-        # self.duration = data['duration']
-        # self.stunDuration = data['stunDuration']
-        # self.prepDuration = data['prepDuration']
-        # self.dpsDuration = data['dpsDuration']
-        # self.tags = data['tags']
-        # self.startSp = data['startSp']
 
     def __getitem__(self, item):
-        # if item not in self.__dict__:
         return getattr(self, item)
 
     def __setitem__(self, key, value):
@@ -67,9 +56,8 @@ class BlackBoard:
     def __init__(self, data: dict):
         for items in data:
             if 'builtin_function_or_method' not in str(type(items)):
-                print(items, data[items])
-                if items == "def":
-                    setattr(self, "defense", data[items])
+                if items == 'def':
+                    setattr(self, 'defense', data[items])
                 else:
                     setattr(self, items, data[items])
 

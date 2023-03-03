@@ -6,7 +6,7 @@ from .GradAttackTiming import explain_grad_attack_timing
 from .load_json import character_table
 
 
-async def calculate_grad_damage(_):
+async def calculate_grad_damage(_) -> int:
     ret = 0
     dmg_table = []
     _seq = list(range(int(_['dur'].attackCount)))  # [0, 1, ..., attackCount-1]
@@ -51,13 +51,15 @@ async def calculate_grad_damage(_):
         atk_timing = [atk_begin + _['attackTime'] * i for i in _seq]
 
         dmg_table = [atk_by_sec[math.floor(x)] * _['buffFrame'].damage_scale for x in atk_timing]
-        _['log'].write(await explain_grad_attack_timing(
-            {'duration': n,
-             'atk_by_sec': atk_by_sec,
-             'atk_timing': atk_timing,
-             'dmg_table': dmg_table
-             })
-                       )
+        _['log'].write(
+            await explain_grad_attack_timing(
+                {'duration': n,
+                 'atk_by_sec': atk_by_sec,
+                 'atk_timing': atk_timing,
+                 'dmg_table': dmg_table
+                 }
+            )
+        )
     elif _['skillId'] == "skchr_billro_3":
         # 卡涅利安: 每秒改变一次攻击力（多一跳），蓄力时随攻击次数改变damage_scale倍率, finalFrame.atk为最后一次攻击力
         _range = _['basicFrame']['atk'] * Decimal(_['blackboard'].atk)
@@ -71,7 +73,6 @@ async def calculate_grad_damage(_):
         sc = [1.2, 1.4, 1.6, 1.8, 2]
         scale_table = [sc[i] if i < len(sc) else 2 for i in range(len(_seq))]
 
-        # print({'atk_by_sec': atk_by_sec, 'atk_timing': atk_timing, 'scale_table': scale_table})
         dmg_table = [atk_by_sec[math.floor(x)] * Decimal(_['ecount'] * max(1 - _['emrpct'], 0.05) *
                                                          _['buffFrame']['damage_scale'])
                      for x in atk_timing]

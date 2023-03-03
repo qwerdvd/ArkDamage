@@ -1,8 +1,7 @@
+import asyncio
 import os
 from pathlib import Path
 from typing import List, Tuple
-
-import asyncio
 
 from aiohttp import ClientSession
 from nonebot import logger
