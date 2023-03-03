@@ -71,8 +71,8 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     await send_forward_msg(bot, event.group_id, "小小小小真寻", "2673918369", forward_msg)
 
 
-async def test(message: list):
-    mes = await handle_mes(message)
+async def test(message_list: list):
+    mes = await handle_mes(message_list)
     base_char_info = InitChar(mes)
     char = Character(base_char_info)
     enemy = Enemy({'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0})

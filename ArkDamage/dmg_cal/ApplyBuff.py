@@ -652,8 +652,8 @@ async def apply_buff(
                 await write_buff("计算反射伤害，而非DPS")
             case "skchr_yuki_2":
                 # blackboard.attack@atk_scale *= 3
-                value = blackboard.vlaue('attack@atk_scale')
-                blackboard.update('attack@atk_scale', value)
+                atk_scale = blackboard.vlaue("attack@atk_scale")
+                blackboard.update('attack@atk_scale', atk_scale)
                 await write_buff(f"总倍率: {blackboard.value('attack@atk_scale')}")
             case "skchr_waaifu_1":
                 blackboard.atk = blackboard.value("waaifu_s_1[self].atk")

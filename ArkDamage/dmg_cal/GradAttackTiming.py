@@ -14,7 +14,7 @@ async def explain_grad_attack_timing(_, n=7):
     while i < len(row_time):
         r1 = ["时间(s)"] + row_time[i:i + n]
         ls1 = [":--:"] + l1[i:i + n]
-        a1 = ["攻击力"] + row_atk[i:i + n]
+        a1 = ["攻击力"] + row_atk[i:i + n]  # type: ignore
         lines.append(f"| {' | '.join(str(x) for x in r1)} |")
         lines.append(f"| {' | '.join(str(x) for x in ls1)} |")
         lines.append(f"| {' | '.join(str(x) for x in a1)} |")
@@ -25,8 +25,8 @@ async def explain_grad_attack_timing(_, n=7):
     while i < len(row_timing):
         r2 = ["时点(s)"] + row_timing[i:i + n]
         ls2 = [":--:"] + l2[i:i + n]
-        s2 = []
-        d2 = ["伤害"] + row_dmg[i:i + n]
+        # s2 = []
+        d2 = ["伤害"] + row_dmg[i:i + n]  # type: ignore
         lines.append(f"| {' | '.join(str(x) for x in r2)} |")
         lines.append(f"| {' | '.join(str(x) for x in ls2)} |")
         if _.get('scale_table'):

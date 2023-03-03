@@ -185,7 +185,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
     if options.get("crit"):
         log.write("**【暴击Buff计算】**")
         for buff in buff_list:
-            buff_name = blackboard.id if buff == "skill" else buff
+            # buff_name = blackboard.id if buff == "skill" else buff
             crit_buff_frame = await apply_buff(base_char_info, char, crit_buff_frame, buff,
                                                buff_list[buff], is_skill, True, log, enemy)
         # 计算团辅
@@ -236,7 +236,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
     if corr != 0:
         real_frame = math.ceil(frame)  # 有误差时，不舍入而取上界，并增加补正值(一般为1)
         real_frame += int(corr)
-        prefix = "+" if int(corr) > 0 else ""
+        # prefix = "+" if int(corr) > 0 else ""
         if is_skill:
             log.write_note("帧数补正")
             log.write("[补帧处理] 攻击间隔帧数 > 攻击动画帧数，实际攻击间隔需要补帧（参考动画帧数表）")
@@ -1265,11 +1265,11 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                     # 计算本体属性。狼的法伤不享受特性加成
                     vigil_final_atk = final_frame['atk']
                     if options.get("token"):
-                        token_id = char_attr['char'].charId
-                        char_attr['char'].charId = "char_427_vigil"
+                        token_id = char_attr['char']['charId']
+                        char_attr['char']['charId'] = "char_427_vigil"
                         vigil = await get_attributes(base_char_info, char_attr['char'], display_names, NoLog())
                         vigil_final = await get_buffed_attributes(vigil['basic'], buff_frame)
-                        char_attr['char'].charId = token_id
+                        char_attr['char']['charId'] = token_id
                         vigil_final_atk = vigil_final['atk']
                         if not options['cond']:
                             log.write_note("必定满足阻挡条件")

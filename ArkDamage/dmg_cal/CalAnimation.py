@@ -8,7 +8,7 @@ async def calculate_animation(char_id, skill_id, is_skill, attack_time, attack_s
     _fps = 30
     char_data = character_table[str(char_id)]
     anim_data = dps_anim.get(char_id, {})
-    anim_key = "Attack"
+    # anim_key = "Attack"
     attack_key = await check_specs(char_id, "anim_key")
     if not attack_key:
         attack_key = next((x for x in ["Attack", "Attack_Loop", "Combat"] if anim_data.get(x)), None)
@@ -57,7 +57,7 @@ async def calculate_animation(char_id, skill_id, is_skill, attack_time, attack_s
     attack_frame = attack_time * _fps
     real_attack_frame = round(attack_frame)
     real_attack_time = real_attack_frame / _fps
-    anim_frame = 0
+    # anim_frame = 0
     event_frame = -1
     scale = 1
     scaled_anim_frame = 0

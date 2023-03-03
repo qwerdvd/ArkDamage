@@ -78,9 +78,9 @@ async def calc_durations(base_char_info: InitChar, char: Character, is_skill, at
         }
 
         # 技能动画(阻回)时间-帧
-        cast_time = await check_specs(skill_id, "cast_time") or \
-                    await check_specs(skill_id,
-                                      "cast_bat") * 100 / attack_speed or attack_time * fps
+        cast_time = (await check_specs(skill_id, "cast_time") or
+                     await check_specs(skill_id,
+                                       "cast_bat") * 100 / attack_speed or attack_time * fps)
         skill_time = max(cast_time, attack_time * fps)
 
         def time_since(key):
@@ -561,10 +561,10 @@ async def calc_durations(base_char_info: InitChar, char: Character, is_skill, at
             # 技能类型
             match sp_data.spType:
                 case 8:
-                    if level_data["duration"] <= 0 and blackboard.get('duration'):
+                    if level_data.duration <= 0 and blackboard.get('duration'):
                         # print(f"Duration? l/b {skill_id} {levelData['duration']} {blackboard.duration}")
-                        level_data["duration"] = blackboard.duration
-                    if level_data["duration"] > 0:
+                        level_data.duration = blackboard.duration
+                    if level_data.duration > 0:
                         tags.append("auto")
                         if skill_id == "skchr_nearl2_2":
                             attack_count = 0
@@ -573,7 +573,7 @@ async def calc_durations(base_char_info: InitChar, char: Character, is_skill, at
                         else:
                             log.write("[特殊] 落地点火 - 取普攻时间=技能持续时间")
                             log.write_note("取普攻时间=技能持续时间")
-                            attack_duration = level_data["duration"]
+                            attack_duration = level_data.duration
                             attack_count = math.ceil(attack_duration / attack_time)
                             duration = attack_count * attack_time
                     else:

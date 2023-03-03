@@ -21,10 +21,10 @@ async def get_token_atk_hp(base_char_info: InitChar, char: Character, token_id, 
 
     # 特判
     if token_id == "token_10027_ironmn_pile3":
-        char.attr['basic'].atk = old_char.atk
+        char.attr['basic']['atk'] = old_char['atk']
         # 加入召唤物技能
         skill_data = skill_table["sktok_ironmn_pile3"]
-        level_data = skill_data.levels[char.attr['char'].skillLevel]
+        level_data = skill_data.levels[char.attr['char']['skillLevel']]
         blackboard = get_blackboard(level_data["blackboard"]) or {}
         char.attr['buffList']["sktok_ironmn_pile3"] = blackboard
         char.displayNames["sktok_ironmn_pile3"] = level_data["name"]

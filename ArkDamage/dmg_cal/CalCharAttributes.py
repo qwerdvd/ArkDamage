@@ -84,17 +84,17 @@ async def get_blackboard(blackboard_array) -> dict:
 
 
 async def get_dict_blackboard(blackboard_array) -> dict:
-    dict = {}
+    blackboard = {}
     for item in blackboard_array:
-        dict[item['key']] = item['value']
-    return dict
+        blackboard[item['key']] = item['value']
+    return blackboard
 
 
 async def apply_equip(char: Character, base_char_info: InitChar, basic: dict, log) -> dict:
     equip_id = base_char_info.equip_id
     # bedb = char.UniEquipData
     phase = base_char_info.equipLevel - 1
-    cand = 0
+    # cand = 0
     blackboard = {}
     attr = {}
     # phase = int(base_char_info.equip_id.split('_')[1][-1])
@@ -207,7 +207,7 @@ async def get_attributes(base_char_info: InitChar, char: Character, display_name
     # 计算天赋/特性，记为Buff
     if char.CharData.trait and not char.CharData.get('has_trait'):
         char.CharData.has_trait = True
-        char.CharData.talents.append(char.CharData.trait)
+        char.CharData.talents.append(char.CharData.trait)  # type: ignore
     if char.CharData.talents:
         for talentData in char.CharData.talents:
             if talentData.candidates:
