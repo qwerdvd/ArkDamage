@@ -1,6 +1,8 @@
+import asyncio
+import threading
 from typing import Union
 
-from nonebot import on_command
+from nonebot import on_command, logger
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GroupMessageEvent,
