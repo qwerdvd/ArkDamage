@@ -22,7 +22,7 @@ async def daily_check_version():
 
 
 # 伤害计算
-# "伤害计算 能天使 精二90 三技能 一模"
+# "伤害计算 能天使 满潜 精二90 三技能 一模"
 # 默认满技能满潜模组满级
 @dmg_cal.handle()
 async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -38,6 +38,7 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     if await check_specs(base_char_info.skill_id, "overdrive"):  # 过载
         forward_msg = [
             f"干员：{char.CharData.name}",
+            f"潜能：{base_char_info.potentialRank + 1}",
             f"稀有度：{base_char_info.rarity + 1} ★",
             f"精英化：{base_char_info.phase}",
             f"等级：{base_char_info.level}",
@@ -54,6 +55,7 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     elif await check_specs(base_char_info.skill_id, "token"):  # 召唤物
         forward_msg = [
             f"干员：{char.CharData.name}",
+            f"潜能：{base_char_info.potentialRank + 1}",
             f"稀有度：{base_char_info.rarity + 1} ★",
             f"精英化：{base_char_info.phase}",
             f"等级：{base_char_info.level}",
@@ -70,6 +72,7 @@ async def send_dmg_cal_msg(bot, event: GroupMessageEvent, args: Message = Comman
     else:
         forward_msg = [
             f"干员：{char.CharData.name}",
+            f"潜能：{base_char_info.potentialRank + 1}",
             f"稀有度：{base_char_info.rarity + 1} ★",
             f"精英化：{base_char_info.phase}",
             f"等级：{base_char_info.level}",

@@ -100,7 +100,7 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
     char_data = char.CharData
     skill_data = char.SkillData
     equip_data = char.UniEquipData
-    if base_char_info.equip_id and len(base_char_info.equip_id) > 0:
+    if base_char_info.equip_id != 'None' and base_char_info.equip_id is not None:
         equip_data = uniequip_table["equipDict"][base_char_info.equip_id]
         char.displayNames[base_char_info.equip_id] = equip_data['uniEquipName']
     if base_char_info.skillLevel == -1:

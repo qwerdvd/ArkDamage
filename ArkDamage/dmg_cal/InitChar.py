@@ -7,9 +7,10 @@ from ..utils.alias.chSkillName_to_SkillId import ch_skill_name_to_skill_id
 
 DEFAULT_VALUES = {
     0: '能天使',
-    1: '精二90',
-    2: '三技能',
-    3: 'None'
+    1: '满潜',
+    2: '精二90',
+    3: '三技能',
+    4: 'None'
 }
 
 
@@ -25,18 +26,19 @@ async def handle_mes(mes: list) -> list:
         * mes: list
             标准化后的参数
     """
-    mes = mes[:4] + [None] * (4 - len(mes))  # 补足长度
+    mes = mes[:5] + [None] * (5 - len(mes))  # 补足长度
 
     if not mes[0]:
         mes[0] = DEFAULT_VALUES[0]
 
-    mes[1] = mes[1].replace('精零', '0').replace('精一', '1').replace('精二', '2')
-    mes[2] = mes[2].replace('一技能', '0').replace('二技能', '1').replace('三技能', '2')
-    mes[2] = await ch_skill_name_to_skill_id(mes[0], mes[2])
+    mes[1] = mes[1].replace('满潜', '6').replace('六潜', '6').replace('五潜', '5').replace('四潜', '4').replace('三潜', '3').replace('二潜', '2').replace('一潜', '1').replace('零潜', '0')
+    mes[2] = mes[2].replace('精零', '0').replace('精一', '1').replace('精二', '2')
+    mes[3] = mes[3].replace('一技能', '0').replace('二技能', '1').replace('三技能', '2')
+    mes[3] = await ch_skill_name_to_skill_id(mes[0], mes[3])
     mes[0] = await ch_name_to_character_id(str(mes[0]))
-    uniequip_id = mes[3].replace('None', '0').replace(
+    uniequip_id = mes[4].replace('None', '0').replace(
         '一模', '1').replace('二模', '2').replace('none', '0') if mes[3] else '0'
-    mes[3] = await ch_equip_name_to_equip_id(mes[0], uniequip_id)
+    mes[4] = await ch_equip_name_to_equip_id(mes[0], uniequip_id)
 
     return mes
 
@@ -72,13 +74,13 @@ class InitChar(BaseModel):
     def __init__(self, mes: list):
         super().__init__()
         self.char_id = mes[0]
+        self.potentialRank = int(mes[1]) - 1
         self.get_rarity()
-        self.phase = int(mes[1][0])
-        self.level = int(mes[1][1:])
+        self.phase = int(mes[2][0])
+        self.level = int(mes[2][1:])
         self.check_level()
-        self.skill_id = mes[2]
-        self.equip_id = mes[3]
-        self.potentialRank = 5
+        self.skill_id = mes[3]
+        self.equip_id = mes[4]
         self.equipLevel = 3
         self.get_option()
         self.favor = 200
