@@ -9,7 +9,7 @@ DEFAULT_VALUES = {
     0: '能天使',
     1: '精二90',
     2: '三技能',
-    3: '一模'
+    3: 'None'
 }
 
 
@@ -34,7 +34,8 @@ async def handle_mes(mes: list) -> list:
     mes[2] = mes[2].replace('一技能', '0').replace('二技能', '1').replace('三技能', '2')
     mes[2] = await ch_skill_name_to_skill_id(mes[0], mes[2])
     mes[0] = await ch_name_to_character_id(str(mes[0]))
-    uniequip_id = mes[3].replace('None', '0').replace('一模', '1').replace('二模', '2')
+    uniequip_id = mes[3].replace('None', '0').replace(
+        '一模', '1').replace('二模', '2').replace('none', '0') if mes[3] else '0'
     mes[3] = await ch_equip_name_to_equip_id(mes[0], uniequip_id)
 
     return mes

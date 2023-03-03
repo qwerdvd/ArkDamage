@@ -145,7 +145,7 @@ class CharAllSkillLvlup(BaseModel):
     lvlUpCost: List[LevelUpCost]
 
 
-class CharData(BaseModel):
+class CharacterData(BaseModel):
     name: str
     description: str
     canUseGeneralPotentialItem: bool

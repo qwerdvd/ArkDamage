@@ -1,9 +1,10 @@
 import math
 from decimal import Decimal
 
+from . import InitChar, Character
 from .CalCharAttributes import check_specs
 from .load_json import dps_anim
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.models import BlackBoard, Dur
+from .model.models import BlackBoard, Dur
 
 
 # 重置普攻判定
@@ -21,8 +22,14 @@ async def check_reset_attack(key, blackboard, options):
         )
 
 
-async def calc_durations(display_names, is_skill, attack_time, attack_speed, level_data, buff_list, buff_frame,
-                         enemy_count, options, char_data, char_id, log):
+async def calc_durations(base_char_info: InitChar, char: Character, is_skill, attack_time,
+                         attack_speed, buff_frame, enemy_count, log):
+    options = base_char_info.options
+    char_id = base_char_info.char_id
+    display_names = char.displayNames
+    buff_list = char.attr['buffList']
+    char_data = char.CharData
+    level_data = char.LevelData
     blackboard = BlackBoard(buff_list['skill'])
     skill_id = blackboard.id
     sp_data = level_data.spData

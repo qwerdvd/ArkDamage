@@ -73,7 +73,7 @@ async def download_all_file_from_github():
             sha = item['sha']
             path = Path(PATH_MAP[FILE_TO_PATH[url]])
             if path.exists():
-                is_diff = sha == path.read_text()
+                is_diff = sha == path.read_text(encoding='utf-8')
             else:
                 is_diff = True
             if (

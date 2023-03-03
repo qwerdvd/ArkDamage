@@ -1,15 +1,18 @@
 from decimal import Decimal
 
+from . import InitChar
 from .CalCharAttributes import check_specs
-from .Character import init_buff_frame
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.models import BlackBoard
+from .Character import init_buff_frame, Character
+from .model.models import BlackBoard
 
 
 async def apply_buff(
-        display_names, base_char_info,
-        char_attr, buff_frm, tag,
-        blackbd, is_skill, is_crit,
-        log, enemy) -> dict:
+        base_char_info: InitChar, char: Character, buff_frm, tag,
+        blackbd, is_skill, is_crit, log, enemy
+) -> dict:
+    display_names = char.displayNames
+    char_attr = char.attr
+
     buff_frame = buff_frm if buff_frm else init_buff_frame()
     blackboard = BlackBoard(blackbd)
     basic = char_attr['basic']

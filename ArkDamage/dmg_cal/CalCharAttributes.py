@@ -1,10 +1,10 @@
 import math
 from decimal import Decimal
 
-from . import InitChar, Character
+from . import Character, InitChar
 from .Character import AttributeKeys, init_buff_frame
 from .load_json import specs
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.char_data import CharData
+from .model.char_data import CharacterData
 from ..utils.math_model import get_attribute
 
 
@@ -30,10 +30,10 @@ async def cal_basic_attributes(base_char_info: InitChar, char: Character) -> dic
     # attributesKeyFrames = {}
     # 计算等级加成
     if base_char_info.level == char.CharData.phases[base_char_info.phase].maxLevel:
-        attributes_key_frames = char.PhaseData['attributesKeyFrames'][1]['data'].copy()
+        attributes_key_frames = char.PhaseData.attributesKeyFrames[1].data.copy()
     else:
         attributes_key_frames = {
-            key: await get_attribute(char.PhaseData['attributesKeyFrames'], base_char_info.level, 1, key) for key in
+            key: await get_attribute(char.PhaseData.attributesKeyFrames, base_char_info.level, 1, key) for key in
             AttributeKeys}
 
     # 计算信赖加成
@@ -59,7 +59,7 @@ PotentialAttributeTypeList = {
 }
 
 
-async def apply_potential(char_data: CharData, rank: int, basic: dict, log) -> dict:
+async def apply_potential(char_data: CharacterData, rank: int, basic: dict, log) -> dict:
     if not char_data.potentialRanks or len(char_data.potentialRanks) == 0:
         return basic
     for i in range(rank):
@@ -88,7 +88,6 @@ async def get_dict_blackboard(blackboard_array) -> dict:
     for item in blackboard_array:
         dict[item['key']] = item['value']
     return dict
-    # return {item.keys: item.values for item in blackboard_array}
 
 
 async def apply_equip(char: Character, base_char_info: InitChar, basic: dict, log) -> dict:

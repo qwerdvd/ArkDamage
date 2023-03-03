@@ -1,10 +1,10 @@
-from pydantic import Field
+from typing import Union
 
 from . import InitChar
 from .load_json import character_table, skill_table, battle_equip_table
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.battle_equip_data import UniequipData
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.char_data import CharData
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.skill_data import SkillData
+from .model.battle_equip_data import UniequipData
+from .model.char_data import CharacterData, CharPhaseData
+from .model.skill_data import SkillData, SkillLevelData
 
 AttributeKeys = [
     'atk',
@@ -62,17 +62,21 @@ class Attributes:
 
 
 class Character(Attributes):
-    CharData: CharData
-    PhaseData = Field(dict, alias='phaseData', title='干员阶段数据')
-    attributesKeyFrames = Field(dict, alias='attributesKeyFrames', title='属性关键帧')
-    buffs = Field(dict, alias='buffs', title='buff数据')
-    buffList = Field(dict, alias='buffList', title='buff列表')
+    CharData: CharacterData
+    PhaseData: CharPhaseData
     SkillData: SkillData
-    UniEquipData: UniequipData
+    LevelData: SkillLevelData
+    UniEquipData: Union[UniequipData, None]
+    attr: dict = {}
+    blackboard: dict = {}
+    attributesKeyFrames: dict = {}
+    buffs: dict = {}
+    buffList: dict = {}
+    displayNames: dict = {}
 
     def __init__(self, base_char_info: InitChar):
         super().__init__()
-        self.CharData = CharData(character_table[base_char_info.char_id])
+        self.CharData = CharacterData(character_table[base_char_info.char_id])
         phase = base_char_info.phase
         self.PhaseData = self.CharData.phases[phase]
         self.attributesKeyFrames = {}
@@ -80,5 +84,9 @@ class Character(Attributes):
         self.buffList = {}
 
         self.SkillData = SkillData(skill_table[base_char_info.skill_id])
-        self.UniEquipData = UniequipData(
-            battle_equip_table[base_char_info.equip_id]) if base_char_info.equip_id else None
+        self.LevelData = self.SkillData.levels[base_char_info.skillLevel]
+        if base_char_info.equip_id in battle_equip_table.keys():
+            self.UniEquipData = UniequipData(
+                battle_equip_table[base_char_info.equip_id])
+        else:
+            self.UniEquipData = None

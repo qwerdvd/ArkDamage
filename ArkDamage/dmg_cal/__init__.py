@@ -8,7 +8,7 @@ from .CalCharAttributes import check_specs
 from .CalDps import calculate_dps
 from .Character import Character
 from .InitChar import InitChar, handle_mes
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.model.models import Enemy
+from .model.models import Enemy
 
 from ..utils.message.send_msg import send_forward_msg
 
