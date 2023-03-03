@@ -35,13 +35,13 @@ async def send_download_resource_msg(
     await matcher.finish(im)
 
 
-# async def startup():
-#     logger.info('正在检查 Arknights 版本与资源文件')
-#     need_download = await get_ark_version()
-#     if need_download[1]:
-#         logger.info('检测到版本资源更新，正在下载资源文件，可能需要较长时间，请稍等')
-#         logger.info('[资源文件下载] 正在检查与下载缺失的资源文件，可能需要较长时间，请稍等')
-#         logger.info(f'[资源文件下载] {await download_all_resource()}')
-#
-#
-# threading.Thread(target=lambda: asyncio.run(startup()), daemon=True).start()
+async def startup():
+    logger.info('正在检查 Arknights 版本与资源文件')
+    need_download = await get_ark_version()
+    if need_download[1]:
+        logger.info('检测到版本资源更新，正在下载资源文件，可能需要较长时间，请稍等')
+        logger.info('[资源文件下载] 正在检查与下载缺失的资源文件，可能需要较长时间，请稍等')
+        logger.info(f'[资源文件下载] {await download_all_resource()}')
+
+
+threading.Thread(target=lambda: asyncio.run(startup()), daemon=True).start()
