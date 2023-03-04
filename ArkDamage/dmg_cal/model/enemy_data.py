@@ -80,17 +80,3 @@ class EnemyDataBase(BaseModel):
 
     def __init__(self, enemy_dict: dict):
         super().__init__(**enemy_dict)
-
-
-if __name__ == '__main__':
-    import json
-
-    with open('C:/Users/qwerdvd/Desktop/ArkDamage/data/ArkDamage/levels/enemydata/enemy_database.json',
-              encoding='utf-8') as f:
-        data = json.load(f)
-    enemy_list = data['enemies']
-    for enemy in enemy_list:
-        try:
-            EnemyDataBase(enemy)
-        except Exception as e:
-            print(enemy['Key'], e)
