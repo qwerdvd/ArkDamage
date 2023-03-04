@@ -144,9 +144,6 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
     log.write("----")
     _backup = {
         "basic": dict(char.attributesKeyFrames),
-        # "enemy": dict(enemy),
-        # "chr": dict(charData),
-        # "level": dict(levelData),
     }
 
     _note = ""

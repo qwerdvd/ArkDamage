@@ -4,7 +4,7 @@ from .RESOURCE_PATH import (
     DPS_ANIM_PATH, DPS_OPTIONS_PATH, DPS_SPECIALTAGS_PATH,
     CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH, BATTLE_EQUIP_TABLE_PATH,
     CHARACTERID_CHNAME_MAP_PATH, SKILL_TABLE_PATH,
-    CHEQUIPNAME_TO_EQUIPID_MAP_PATH, CHSKILLNAME_TO_SKILLID_MAP_PATH
+    CHEQUIPNAME_TO_EQUIPID_MAP_PATH, CHSKILLNAME_TO_SKILLID_MAP_PATH, ENEMYDATA_PATH
 )
 
 
@@ -24,6 +24,7 @@ def load():
     uniequip = load_json_file(UNIEQUIP_TABLE_PATH)
     battle_equip = load_json_file(BATTLE_EQUIP_TABLE_PATH)
     skill = load_json_file(SKILL_TABLE_PATH)
+    enemy_data = load_json_file(ENEMYDATA_PATH)
 
     return (
         character_id_and_ch_name,
@@ -36,6 +37,7 @@ def load():
         battle_equip,
         skill,
         special,
+        enemy_data,
     )
 
 
@@ -50,4 +52,5 @@ def load():
     battle_equip_table,
     skill_table,
     specs,
+    enemy_database,
 ) = load()

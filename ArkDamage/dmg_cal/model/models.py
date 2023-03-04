@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from pydantic import Field, BaseModel
 
@@ -35,17 +35,14 @@ class Dur(BaseModel):
 
 
 class Enemy(BaseModel):
-    defense = Field(int)
-    magicResistance = Field(int)
-    count = Field(int)
-    hp = Field(int)
+    defense: int
+    magicResistance: int
+    count: int
+    hp: int
+    name: str
 
     def __init__(self, data: dict):
-        super().__init__()
-        self.defense = data['defense']
-        self.magicResistance = data['magicResistance']
-        self.count = data['count']
-        self.hp = data['hp']
+        super().__init__(**data)
 
     def __setattr__(self, name, value):
         self.__dict__[name] = value

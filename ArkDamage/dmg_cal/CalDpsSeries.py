@@ -29,14 +29,16 @@ LabelNames = {
 
 
 async def cal_(base_char_info, char, enemy):
+    backup_defense = enemy.defense
+    backup_magicResistance = enemy.magicResistance
     def_plot_data = await calculate_dps_series(
         base_char_info, char, enemy, 'defense', EnemySeries['defense']
     )
-    enemy.change('defense', 0)  # reset defense
+    enemy.change('defense', backup_defense)  # reset defense
     mag_plot_data = await calculate_dps_series(
         base_char_info, char, enemy, 'magicResistance', EnemySeries['magicResistance']
     )
-    enemy.change('magicResistance', 0)  # reset magicResistance
+    enemy.change('magicResistance', backup_magicResistance)  # reset magicResistance
 
     damage_type = await extract_damage_type(
         base_char_info, char, True, BlackBoard(char.buffList['skill']), base_char_info.options
@@ -54,6 +56,7 @@ async def cal_(base_char_info, char, enemy):
 
     # Plot DPS and Damage data
     fig, ax = plt.subplots(dpi=300)
+    plt.grid(True)
     x_dps, y_dps = [], []
     x_damage, y_damage = [], []
     for k, v in plot_data['dps_plot_data'].items():
@@ -62,16 +65,33 @@ async def cal_(base_char_info, char, enemy):
     for k, v in plot_data['damage_plot_data'].items():
         x_damage.append(v[0])
         y_damage.append(v[1])
-    plt.grid(True)
-    plt.plot(x_dps, y_dps, '-o', label='DPS')
-    plt.plot(x_damage, y_damage, '-o', label='Damage')
+
+    # Plot the DPS data on the left Y-axis
+    ax.plot(x_dps, y_dps, '-o', label='DPS', color='blue')
     if damage_type == 1:
         plt.xlabel('magicResistance')
     else:
         plt.xlabel('defense')
-    plt.ylabel('DPS and Damage')
-    plt.legend(loc='upper right')
-    plt.subplots_adjust(left=0.15)  # Adjust the left margin
+    ax.set_ylabel('DPS')
+    ax.tick_params(axis='y', labelcolor='blue')
+
+    # Create a secondary Y-axis for the Damage data
+    ax2 = ax.twinx()
+    ax2.plot(x_damage, y_damage, '-o', label='Damage', color='orange')
+    ax2.set_ylabel('Damage')
+    ax2.tick_params(axis='y', labelcolor='orange')
+
+    # Automatically adjust the range of both Y-axes
+    ax.set_ylim(bottom=0, top=max(y_dps) * Decimal(1.1))
+    ax2.set_ylim(bottom=0, top=max(y_damage) * Decimal(1.1))
+
+    # Set the legend for both axes
+    lines, labels = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines + lines2, labels + labels2, loc='upper right')
+
+    # Adjust the plot margins
+    plt.subplots_adjust(left=0.2, right=0.8)
 
     # Convert the plot to bytes
     buf = io.BytesIO()
@@ -126,7 +146,6 @@ async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, se
         char.attributesKeyFrames["atk"] = round(char.attributesKeyFrames["atk"] + delta)
 
     results = {'dps_plot_data': {}, 'damage_plot_data': {}}
-    # plot_data = {}
     _backup = {
         "basic": dict(char.attributesKeyFrames),
     }
@@ -176,16 +195,6 @@ async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, se
         global_dps = round((Decimal(normal_attack['totalDamage']) + Decimal(skill_attack['totalDamage'])) /
                            Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
                                    skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
-        # global_hps = round((Decimal(normal_attack['totalHeal']) + Decimal(skill_attack['totalHeal'])) /
-        #                    Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
-        #                            skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
-        # results[x] = {
-        #     'normal': normal_attack,
-        #     'skill': skill_attack,
-        #     'skillName': level_data.name,
-        #     'globalDps': global_dps,
-        #     'globalHps': global_hps
-        # }
         dps_singe_plot = [x, global_dps]
         damage_singe_plot = [x, skill_attack['totalDamage']]
         results['dps_plot_data'][x] = dps_singe_plot

@@ -8,6 +8,10 @@ sys.path.append(str(MAIN_PATH))
 
 MAP_PATH = MAIN_PATH / "map"
 EXCEL_PATH = MAIN_PATH / "excel"
+LEVEL_PATH = MAIN_PATH / "levels"
+
+ENEMY_PATH = LEVEL_PATH / "enemydata"
+ENEMYDATA_PATH = ENEMY_PATH / "enemy_database.json"
 
 DPS_ANIM_PATH = MAIN_PATH / "dps_anim.json"
 DPS_OPTIONS_PATH = MAIN_PATH / "dps_options.json"
