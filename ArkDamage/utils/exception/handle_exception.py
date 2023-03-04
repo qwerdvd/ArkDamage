@@ -8,7 +8,7 @@ from nonebot.matcher import Matcher
 
 
 def handle_exception(
-    name: str, log_msg: Optional[str] = None, fail_msg: Optional[str] = None
+        name: str, log_msg: Optional[str] = None, fail_msg: Optional[str] = None
 ):
     """
     :说明:
@@ -19,12 +19,13 @@ def handle_exception(
       * ``fail_msg: str = None``: 自定义捕获异常后向用户回报的信息，仅在提供自定义日志信息时有效。
                                   开头带@则艾特用户。留空则与日志信息相同。
     """
+
     def wrapper(func):
         @wraps(func)
         async def inner(
-            log_msg: Optional[str] = log_msg,
-            fail_msg: Optional[str] = fail_msg,
-            **kwargs,
+                log_msg: Optional[str] = log_msg,
+                fail_msg: Optional[str] = fail_msg,
+                **kwargs,
         ):
             matcher: Matcher = kwargs['matcher']
             try:

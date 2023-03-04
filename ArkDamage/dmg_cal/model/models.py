@@ -47,6 +47,15 @@ class Enemy(BaseModel):
         self.count = data['count']
         self.hp = data['hp']
 
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def change(self, key: str, value: int):
+        self.__dict__[key] = value
+
 
 class BlackBoard:
     id: str

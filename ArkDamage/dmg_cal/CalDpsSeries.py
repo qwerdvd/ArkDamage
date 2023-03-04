@@ -1,13 +1,86 @@
+import io
 from decimal import Decimal
 
-from .CalAttack import calculate_attack
+import matplotlib.pyplot as plt
+from nonebot import logger
+
+from .CalAttack import calculate_attack, extract_damage_type
 from .CalCharAttributes import get_blackboard, get_attributes, check_specs
 from .CalDps import get_token_atk_hp
+from .load_json import uniequip_table
 from .log import NoLog
+from .model.models import Enemy, BlackBoard
 from .model.raid_buff import RaidBlackboard
 
+EnemySeries = {
+    "defense": [x * 100 for x in range(31)],
+    "magicResistance": [x * 5 for x in range(21)],
+    "count": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+}
 
-async def calculate_dps_series(base_char_info, char, enemy, key, series):
+LabelNames = {
+    "defense": "防御",
+    "magicResistance": "法抗",
+    "count": "数量",
+    "dps": "平均DPS",
+    "s_dps": "技能DPS",
+    "s_dmg": "技能总伤害"
+}
+
+
+async def cal_(base_char_info, char, enemy):
+    def_plot_data = await calculate_dps_series(
+        base_char_info, char, enemy, 'defense', EnemySeries['defense']
+    )
+    enemy.change('defense', 0)  # reset defense
+    mag_plot_data = await calculate_dps_series(
+        base_char_info, char, enemy, 'magicResistance', EnemySeries['magicResistance']
+    )
+    enemy.change('magicResistance', 0)  # reset magicResistance
+
+    damage_type = await extract_damage_type(
+        base_char_info, char, True, BlackBoard(char.buffList['skill']), base_char_info.options
+    )
+    logger.info(f'CalDpsSeries: damage_type: {damage_type}')
+
+    if damage_type == 0:
+        plot_data = def_plot_data
+    elif damage_type == 1:
+        plot_data = mag_plot_data
+    elif damage_type == 2:  # 治疗
+        return None
+    else:  # 真实伤害时取防御
+        plot_data = def_plot_data
+
+    # Plot DPS and Damage data
+    fig, ax = plt.subplots(dpi=300)
+    x_dps, y_dps = [], []
+    x_damage, y_damage = [], []
+    for k, v in plot_data['dps_plot_data'].items():
+        x_dps.append(v[0])
+        y_dps.append(v[1])
+    for k, v in plot_data['damage_plot_data'].items():
+        x_damage.append(v[0])
+        y_damage.append(v[1])
+    plt.grid(True)
+    plt.plot(x_dps, y_dps, '-o', label='DPS')
+    plt.plot(x_damage, y_damage, '-o', label='Damage')
+    if damage_type == 1:
+        plt.xlabel('magicResistance')
+    else:
+        plt.xlabel('defense')
+    plt.ylabel('DPS and Damage')
+    plt.legend(loc='upper right')
+    plt.subplots_adjust(left=0.15)  # Adjust the left margin
+
+    # Convert the plot to bytes
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    return buf
+
+
+async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, series) -> dict:
     log = NoLog()
     raid_buff = {'atk': 0, 'atkpct': 0, 'ats': 0, 'cdr': 0, 'base_atk': 0, 'damage_scale': 0}
     raid_blackboard = RaidBlackboard({
@@ -23,18 +96,24 @@ async def calculate_dps_series(base_char_info, char, enemy, key, series):
     char_id = base_char_info.char_id
     char_data = char.CharData
     skill_data = char.SkillData
-    if char.skillLevel == -1:
-        char.skillLevel = skill_data.levels.length - 1
+    if base_char_info.equip_id != 'None' and base_char_info.equip_id is not None:
+        equip_data = uniequip_table["equipDict"][base_char_info.equip_id]
+        char.displayNames[base_char_info.equip_id] = equip_data['uniEquipName']
+    if base_char_info.skillLevel == -1:
+        base_char_info.skillLevel = len(skill_data.levels) - 1
 
     level_data = char.LevelData
     char.blackboard = await get_blackboard(skill_data.levels[base_char_info.skillLevel].blackboard) or {}
 
+    char.displayNames[char_id] = char_data.name
+    char.displayNames[base_char_info.skill_id] = level_data.name  # add to name cache
+
     char = await get_attributes(base_char_info, char, log)
     char.blackboard['id'] = skill_data.skillId
-    char.buffList["skill"] = char.blackboard
-
-    char.displayNames[char_id] = char_data.name
-    char.displayNames[char.skillId] = level_data.name  # add to name cache
+    char.buffList["skill"] = {}
+    for key, value in char.blackboard.items():
+        char.buffList['skill'][key] = value
+    char.skillId = char.blackboard['id']
 
     if base_char_info.options.get('token'):
         token_id = await check_specs(char_id, "token") or await check_specs(char.skillId, "token")
@@ -46,13 +125,13 @@ async def calculate_dps_series(base_char_info, char, enemy, key, series):
         prefix = "+" if delta > 0 else ""
         char.attributesKeyFrames["atk"] = round(char.attributesKeyFrames["atk"] + delta)
 
-    results = {}
+    results = {'dps_plot_data': {}, 'damage_plot_data': {}}
+    # plot_data = {}
     _backup = {
         "basic": dict(char.attributesKeyFrames),
     }
-
     for x in series:
-        enemy[key] = x
+        enemy.change(_key, x)
         if not await check_specs(base_char_info.skill_id, "overdrive"):
             base_char_info.options["overdrive_mode"] = False
             char.attributesKeyFrames = dict(_backup["basic"])
@@ -97,15 +176,19 @@ async def calculate_dps_series(base_char_info, char, enemy, key, series):
         global_dps = round((Decimal(normal_attack['totalDamage']) + Decimal(skill_attack['totalDamage'])) /
                            Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
                                    skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
-        global_hps = round((Decimal(normal_attack['totalHeal']) + Decimal(skill_attack['totalHeal'])) /
-                           Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
-                                   skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
-        results[x] = {
-            'normal': normal_attack,
-            'skill': skill_attack,
-            'skillName': level_data.name,
-            'globalDps': global_dps,
-            'globalHps': global_hps
-        }
+        # global_hps = round((Decimal(normal_attack['totalHeal']) + Decimal(skill_attack['totalHeal'])) /
+        #                    Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
+        #                            skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
+        # results[x] = {
+        #     'normal': normal_attack,
+        #     'skill': skill_attack,
+        #     'skillName': level_data.name,
+        #     'globalDps': global_dps,
+        #     'globalHps': global_hps
+        # }
+        dps_singe_plot = [x, global_dps]
+        damage_singe_plot = [x, skill_attack['totalDamage']]
+        results['dps_plot_data'][x] = dps_singe_plot
+        results['damage_plot_data'][x] = damage_singe_plot
 
     return results

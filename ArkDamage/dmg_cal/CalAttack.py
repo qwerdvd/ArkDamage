@@ -391,6 +391,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
     crit_damage = 0
     damage_pool = [0, 0, 0, 0, 0]  # 物理，魔法，治疗，真伤，盾
     extra_damage_pool = [0, 0, 0, 0, 0]
+
     # move = 0
 
     async def calculate_hit_damage(frame, scale):

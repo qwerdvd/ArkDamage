@@ -24,9 +24,9 @@ download_resource = on_command('下载全部资源', rule=FullCommand())
 @download_resource.handle()
 @handle_exception('下载全部资源', '资源下载错误')
 async def send_download_resource_msg(
-    bot: Bot,
-    event: Union[GroupMessageEvent, PrivateMessageEvent],
-    matcher: Matcher,
+        bot: Bot,
+        event: Union[GroupMessageEvent, PrivateMessageEvent],
+        matcher: Matcher,
 ):
     if not await SUPERUSER(bot, event):
         return

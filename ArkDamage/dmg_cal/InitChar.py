@@ -31,7 +31,9 @@ async def handle_mes(mes: list) -> list:
     if not mes[0]:
         mes[0] = DEFAULT_VALUES[0]
 
-    mes[1] = mes[1].replace('满潜', '6').replace('六潜', '6').replace('五潜', '5').replace('四潜', '4').replace('三潜', '3').replace('二潜', '2').replace('一潜', '1').replace('零潜', '0')
+    mes[1] = mes[1].replace('满潜', '6').replace('六潜', '6').replace('五潜', '5').replace('四潜', '4').replace('三潜',
+                                                                                                                '3').replace(
+        '二潜', '2').replace('一潜', '1').replace('零潜', '0')
     mes[2] = mes[2].replace('精零', '0').replace('精一', '1').replace('精二', '2')
     mes[3] = mes[3].replace('一技能', '0').replace('二技能', '1').replace('三技能', '2')
     mes[3] = await ch_skill_name_to_skill_id(mes[0], mes[3])
