@@ -85,7 +85,8 @@ class EnemyDataBase(BaseModel):
 if __name__ == '__main__':
     import json
 
-    with open('C:/Users/qwerdvd/Desktop/ArkDamage/data/ArkDamage/levels/enemydata/enemy_database.json', encoding='utf-8') as f:
+    with open('C:/Users/qwerdvd/Desktop/ArkDamage/data/ArkDamage/levels/enemydata/enemy_database.json',
+              encoding='utf-8') as f:
         data = json.load(f)
     enemy_list = data['enemies']
     for enemy in enemy_list:

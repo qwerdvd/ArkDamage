@@ -2,29 +2,31 @@ import json
 import os
 
 from nonebot import on_command, logger
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message, MessageSegment
-from nonebot.internal.matcher import Matcher
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message, MessageSegment, permission
+from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
+from nonebot.permission import SUPERUSER
 from nonebot_plugin_apscheduler import scheduler
 
-from .RESOURCE_PATH import MAIN_PATH
-from .load_json import enemy_database
-from .CalDpsSeries import cal_
-from .model.enemy_data import EnemyDataBase
 from .CalCharAttributes import check_specs
 from .CalDps import calculate_dps
+from .CalDpsSeries import cal_
 from .Character import Character
 from .InitChar import InitChar, handle_mes
+from .RESOURCE_PATH import MAIN_PATH
+from .load_json import enemy_database
+from .model.enemy_data import EnemyDataBase
 from .model.models import Enemy
 from ..resource.check_version import get_ark_version
 from ..utils.message.send_msg import send_forward_msg
 
+IsAdmin = permission.GROUP_OWNER | permission.GROUP_ADMIN | SUPERUSER
+
 dmg_cal = on_command("伤害计算", priority=5, block=True)
 char_curve = on_command("干员曲线", priority=5, block=True)
-set_enemy = on_command("设置敌人", priority=5, block=True)
+set_enemy = on_command("设置敌人", priority=5, block=True, permission=IsAdmin)
 
 dmg_cal_scheduler = scheduler
-
 
 default_enemy = {'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0, 'name': 'default'}
 
@@ -59,18 +61,18 @@ async def send_dmg_cal_msg(
         enemy = Enemy(default_enemy)
     dps = await calculate_dps(base_char_info, char, enemy)
     base_forward_msg = [
-            f"干员：{char.CharData.name}",
-            f"潜能：{base_char_info.potentialRank + 1}",
-            f"稀有度：{base_char_info.rarity + 1} ★",
-            f"精英化：{base_char_info.phase}",
-            f"等级：{base_char_info.level}",
-            f"skill: {base_char_info.skill_id}\n"
-            f"level: {base_char_info.skillLevel}",
-            f"equip: {base_char_info.equip_id}",
-            f"enemy: {enemy.name}\n"
-            f"defense: {enemy.defense}\n"
-            f"magicResistance: {enemy.magicResistance}\n"
-            f"maxHp: {enemy.hp}",
+        f"干员：{char.CharData.name}",
+        f"潜能：{base_char_info.potentialRank + 1}",
+        f"稀有度：{base_char_info.rarity + 1} ★",
+        f"精英化：{base_char_info.phase}",
+        f"等级：{base_char_info.level}",
+        f"skill: {base_char_info.skill_id}\n"
+        f"level: {base_char_info.skillLevel}",
+        f"equip: {base_char_info.equip_id}",
+        f"enemy: {enemy.name}\n"
+        f"defense: {enemy.defense}\n"
+        f"magicResistance: {enemy.magicResistance}\n"
+        f"maxHp: {enemy.hp}",
     ]
     if await check_specs(base_char_info.skill_id, "overdrive"):  # 过载
         forward_msg = base_forward_msg + [
