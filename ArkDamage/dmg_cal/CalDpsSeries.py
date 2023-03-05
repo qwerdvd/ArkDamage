@@ -28,20 +28,20 @@ LabelNames = {
 }
 
 
-async def cal_(base_char_info, char, enemy):
+async def cal_(char_info, char, enemy):
     backup_defense = enemy.defense
     backup_magicResistance = enemy.magicResistance
     def_plot_data = await calculate_dps_series(
-        base_char_info, char, enemy, 'defense', EnemySeries['defense']
+        char_info, char, enemy, 'defense', EnemySeries['defense']
     )
     enemy.change('defense', backup_defense)  # reset defense
     mag_plot_data = await calculate_dps_series(
-        base_char_info, char, enemy, 'magicResistance', EnemySeries['magicResistance']
+        char_info, char, enemy, 'magicResistance', EnemySeries['magicResistance']
     )
     enemy.change('magicResistance', backup_magicResistance)  # reset magicResistance
 
     damage_type = await extract_damage_type(
-        base_char_info, char, True, BlackBoard(char.buffList['skill']), base_char_info.options
+        char_info, char, True, BlackBoard(char.buffList['skill']), char_info.options
     )
     logger.info(f'CalDpsSeries: damage_type: {damage_type}')
 
@@ -100,7 +100,7 @@ async def cal_(base_char_info, char, enemy):
     return buf
 
 
-async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, series) -> dict:
+async def calculate_dps_series(char_info, char, enemy: Enemy, _key: str, series) -> dict:
     log = NoLog()
     raid_buff = {'atk': 0, 'atkpct': 0, 'ats': 0, 'cdr': 0, 'base_atk': 0, 'damage_scale': 0}
     raid_blackboard = RaidBlackboard({
@@ -113,31 +113,31 @@ async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, se
     })
     char.displayNames["raidBuff"] = ""
 
-    char_id = base_char_info.char_id
+    char_id = char_info.char_id
     char_data = char.CharData
     skill_data = char.SkillData
-    if base_char_info.equip_id != 'None' and base_char_info.equip_id is not None:
-        equip_data = uniequip_table["equipDict"][base_char_info.equip_id]
-        char.displayNames[base_char_info.equip_id] = equip_data['uniEquipName']
-    if base_char_info.skillLevel == -1:
-        base_char_info.skillLevel = len(skill_data.levels) - 1
+    if char_info.equip_id != 'None' and char_info.equip_id is not None:
+        equip_data = uniequip_table["equipDict"][char_info.equip_id]
+        char.displayNames[char_info.equip_id] = equip_data['uniEquipName']
+    if char_info.skillLevel == -1:
+        char_info.skillLevel = len(skill_data.levels) - 1
 
     level_data = char.LevelData
-    char.blackboard = await get_blackboard(skill_data.levels[base_char_info.skillLevel].blackboard) or {}
+    char.blackboard = await get_blackboard(skill_data.levels[char_info.skillLevel].blackboard) or {}
 
     char.displayNames[char_id] = char_data.name
-    char.displayNames[base_char_info.skill_id] = level_data.name  # add to name cache
+    char.displayNames[char_info.skill_id] = level_data.name  # add to name cache
 
-    char = await get_attributes(base_char_info, char, log)
+    char = await get_attributes(char_info, char, log)
     char.blackboard['id'] = skill_data.skillId
     char.buffList["skill"] = {}
     for key, value in char.blackboard.items():
         char.buffList['skill'][key] = value
     char.skillId = char.blackboard['id']
 
-    if base_char_info.options.get('token'):
+    if char_info.options.get('token'):
         token_id = await check_specs(char_id, "token") or await check_specs(char.skillId, "token")
-        char = await get_token_atk_hp(base_char_info, char, token_id, log)
+        char = await get_token_atk_hp(char_info, char, token_id, log)
 
     # 原本攻击力的修正量
     if raid_blackboard.base_atk != 0:
@@ -151,24 +151,24 @@ async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, se
     }
     for x in series:
         enemy.change(_key, x)
-        if not await check_specs(base_char_info.skill_id, "overdrive"):
-            base_char_info.options["overdrive_mode"] = False
+        if not await check_specs(char_info.skill_id, "overdrive"):
+            char_info.options["overdrive_mode"] = False
             char.attributesKeyFrames = dict(_backup["basic"])
-            skill_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, True, log)
+            skill_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
             if not skill_attack:
                 return
 
             char.attributesKeyFrames = dict(_backup["basic"])
-            normal_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, False, log)
+            normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
             if not normal_attack:
                 return
         else:
             char.attributesKeyFrames = dict(_backup["basic"])
-            od_p1 = await calculate_attack(base_char_info, char, enemy, raid_blackboard, True, log)
+            od_p1 = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
 
             char.attributesKeyFrames = dict(_backup["basic"])
-            base_char_info.options["overdrive_mode"] = True
-            od_p2 = await calculate_attack(base_char_info, char, enemy, raid_blackboard, False, log)
+            char_info.options["overdrive_mode"] = True
+            od_p2 = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
 
             merged = dict(od_p2)
             merged.dur = dict(od_p2["dur"])
@@ -187,8 +187,8 @@ async def calculate_dps_series(base_char_info, char, enemy: Enemy, _key: str, se
             skill_attack = merged
 
             char.attributesKeyFrames = dict(_backup["basic"])
-            base_char_info.options["overdrive_mode"] = False
-            normal_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, False, log)
+            char_info.options["overdrive_mode"] = False
+            normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
             if not normal_attack:
                 return
 

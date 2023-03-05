@@ -22,10 +22,10 @@ async def check_reset_attack(key, blackboard, options):
         )
 
 
-async def calc_durations(base_char_info: InitChar, char: Character, is_skill, attack_time,
+async def calc_durations(char_info: InitChar, char: Character, is_skill, attack_time,
                          attack_speed, buff_frame, enemy_count, log) -> Dur:
-    options = base_char_info.options
-    char_id = base_char_info.char_id
+    options = char_info.options
+    char_id = char_info.char_id
     display_names = char.displayNames
     buff_list = char.buffList
     char_data = char.CharData

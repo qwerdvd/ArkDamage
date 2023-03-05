@@ -8,18 +8,18 @@ from .log import Log
 from .model.raid_buff import RaidBlackboard
 
 
-async def get_token_atk_hp(base_char_info: InitChar, char: Character, token_id, log):
+async def get_token_atk_hp(char_info: InitChar, char: Character, token_id, log):
     old_char = char.attributesKeyFrames.copy()
     token_name = character_table[token_id]["name"]
-    base_char_info.charId = token_id
-    char = await get_attributes(base_char_info, char, log)
+    char_info.charId = token_id
+    char = await get_attributes(char_info, char, log)
 
     # 特判
     if token_id == "token_10027_ironmn_pile3":
         char.attributesKeyFrames['atk'] = old_char['atk']
         # 加入召唤物技能
         skill_data = skill_table["sktok_ironmn_pile3"]
-        level_data = skill_data.levels[base_char_info.skillLevel]
+        level_data = skill_data.levels[char_info.skillLevel]
         blackboard = get_blackboard(level_data["blackboard"]) or {}
         char.buffList["sktok_ironmn_pile3"] = blackboard
         char.displayNames["sktok_ironmn_pile3"] = level_data["name"]
@@ -32,8 +32,8 @@ async def get_token_atk_hp(base_char_info: InitChar, char: Character, token_id, 
 
     # blackboard = None
     updated = False
-    equip_id = base_char_info.equip_id
-    equip_level = base_char_info.equipLevel
+    equip_id = char_info.equip_id
+    equip_level = char_info.equipLevel
     match equip_id:
         case "uniequip_002_deepcl":
             if equip_level == 3:
@@ -83,7 +83,7 @@ async def get_token_atk_hp(base_char_info: InitChar, char: Character, token_id, 
     return char
 
 
-async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dict or None:
+async def calculate_dps(char_info: InitChar, char: Character, enemy) -> dict or None:
     log = Log()
     raid_buff = {'atk': 0, 'atkpct': 0, 'ats': 0, 'cdr': 0, 'base_atk': 0, 'damage_scale': 0}
     raid_blackboard = RaidBlackboard({
@@ -96,43 +96,43 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
     })
     char.displayNames["raidBuff"] = "团辅"
 
-    char_id = base_char_info.char_id
+    char_id = char_info.char_id
     char_data = char.CharData
     skill_data = char.SkillData
     equip_data = char.UniEquipData
-    if base_char_info.equip_id != 'None' and base_char_info.equip_id is not None:
-        equip_data = uniequip_table["equipDict"][base_char_info.equip_id]
-        char.displayNames[base_char_info.equip_id] = equip_data['uniEquipName']
-    if base_char_info.skillLevel == -1:
-        base_char_info.skillLevel = len(skill_data.levels) - 1
+    if char_info.equip_id != 'None' and char_info.equip_id is not None:
+        equip_data = uniequip_table["equipDict"][char_info.equip_id]
+        char.displayNames[char_info.equip_id] = equip_data['uniEquipName']
+    if char_info.skillLevel == -1:
+        char_info.skillLevel = len(skill_data.levels) - 1
 
     level_data = char.LevelData
-    char.blackboard = await get_blackboard(skill_data.levels[base_char_info.skillLevel].blackboard) or {}
+    char.blackboard = await get_blackboard(skill_data.levels[char_info.skillLevel].blackboard) or {}
 
     uni_equip_name = equip_data.get('uniEquipName') if equip_data is not None else ''
     log.write(
-        f"{char_data.name} {char_id} 潜能 {base_char_info.potentialRank + 1} 精英 {base_char_info.phase}, "
-        f"等级 {base_char_info.level} {level_data.name} 等级 {base_char_info.skillLevel + 1} "
-        f"{uni_equip_name} 等级 {base_char_info.equipLevel}")
+        f"{char_data.name} {char_id} 潜能 {char_info.potentialRank + 1} 精英 {char_info.phase}, "
+        f"等级 {char_info.level} {level_data.name} 等级 {char_info.skillLevel + 1} "
+        f"{uni_equip_name} 等级 {char_info.equipLevel}")
     log.write('')
     log.write("----")
     char.displayNames[char_id] = char_data.name
-    char.displayNames[base_char_info.skill_id] = level_data.name  # add to name cache
+    char.displayNames[char_info.skill_id] = level_data.name  # add to name cache
 
     # calculate basic attribute package
-    char = await get_attributes(base_char_info, char, log)
+    char = await get_attributes(char_info, char, log)
     char.blackboard['id'] = skill_data.skillId
     char.buffList["skill"] = {}
     for key, value in char.blackboard.items():
         char.buffList['skill'][key] = value
     char.skillId = char.blackboard['id']
 
-    if base_char_info.options.get('token') and (
-            await check_specs(char_id, "token") or await check_specs(base_char_info.skill_id, "token")):
+    if char_info.options.get('token') and (
+            await check_specs(char_id, "token") or await check_specs(char_info.skill_id, "token")):
         log.write("\n")
         log.write_note("**召唤物dps**")
-        token_id = await check_specs(char_id, "token") or await check_specs(base_char_info.skill_id, "token")
-        char = await get_token_atk_hp(base_char_info, char, token_id, log)
+        token_id = await check_specs(char_id, "token") or await check_specs(char_info.skill_id, "token")
+        char = await get_token_atk_hp(char_info, char, token_id, log)
 
     # 原本攻击力的修正量
     if raid_blackboard.base_atk != 0:
@@ -150,10 +150,10 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
     # normal_attack = None
     # skill_attack = None
 
-    if not await check_specs(base_char_info.skill_id, "overdrive"):
+    if not await check_specs(char_info.skill_id, "overdrive"):
         log.write("【技能】")
         log.write("----------")
-        skill_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, True, log)
+        skill_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
 
         if not skill_attack:
             return
@@ -164,7 +164,7 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
 
         log.write("【普攻】")
         log.write("----------")
-        normal_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, False, log)
+        normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
         if not normal_attack:
             return
 
@@ -178,14 +178,14 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
     else:
         # 22.4.15 过载模式计算
         log.write("- **技能前半**\n")
-        od_p1 = await calculate_attack(base_char_info, char, enemy, raid_blackboard, True, log)
+        od_p1 = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
         # _note = f"{log.note}"
 
         log.write("----")
         log.write("- **过载**\n")
         char.attributesKeyFrames = dict(_backup["basic"])
-        base_char_info.options["overdrive_mode"] = True  # 使用options控制，这个options不受UI选项影响
-        od_p2 = await calculate_attack(base_char_info, char, enemy, raid_blackboard, True, log)
+        char_info.options["overdrive_mode"] = True  # 使用options控制，这个options不受UI选项影响
+        od_p2 = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
         _note = f"{log.note}"
 
         # merge result
@@ -207,8 +207,8 @@ async def calculate_dps(base_char_info: InitChar, char: Character, enemy) -> dic
         log.write("----")
         log.write("- **普攻**\n")
         char.attributesKeyFrames = dict(_backup["basic"])
-        base_char_info.options["overdrive_mode"] = False
-        normal_attack = await calculate_attack(base_char_info, char, enemy, raid_blackboard, False, log)
+        char_info.options["overdrive_mode"] = False
+        normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
         if not normal_attack:
             return
 

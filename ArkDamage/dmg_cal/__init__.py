@@ -50,8 +50,8 @@ async def send_dmg_cal_msg(
     logger.info(f"参数：{raw_mes}")
     mes = await handle_mes(raw_mes.split())
     logger.info(f"参数：{mes}")
-    base_char_info = InitChar(mes)
-    char = Character(base_char_info)
+    char_info = InitChar(mes)
+    char = Character(char_info)
     enemy_dict = await load_json(group_id=event.group_id)
     if enemy_dict:
         logger.info("已找到敌人信息，使用自定义敌人")
@@ -59,22 +59,22 @@ async def send_dmg_cal_msg(
     else:
         logger.info("未找到敌人信息，使用默认敌人")
         enemy = Enemy(default_enemy)
-    dps = await calculate_dps(base_char_info, char, enemy)
+    dps = await calculate_dps(char_info, char, enemy)
     base_forward_msg = [
         f"干员：{char.CharData.name}",
-        f"潜能：{base_char_info.potentialRank + 1}",
-        f"稀有度：{base_char_info.rarity + 1} ★",
-        f"精英化：{base_char_info.phase}",
-        f"等级：{base_char_info.level}",
-        f"skill: {base_char_info.skill_id}\n"
-        f"level: {base_char_info.skillLevel}",
-        f"equip: {base_char_info.equip_id}",
+        f"潜能：{char_info.potentialRank + 1}",
+        f"稀有度：{char_info.rarity + 1} ★",
+        f"精英化：{char_info.phase}",
+        f"等级：{char_info.level}",
+        f"skill: {char_info.skill_id}\n"
+        f"level: {char_info.skillLevel}",
+        f"equip: {char_info.equip_id}",
         f"enemy: {enemy.name}\n"
         f"defense: {enemy.defense}\n"
         f"magicResistance: {enemy.magicResistance}\n"
         f"maxHp: {enemy.hp}",
     ]
-    if await check_specs(base_char_info.skill_id, "overdrive"):  # 过载
+    if await check_specs(char_info.skill_id, "overdrive"):  # 过载
         forward_msg = base_forward_msg + [
             f"攻击力：{dps['skill']['atk']:.2f}",
             f"攻击次数：{dps['skill']['dur']['hitCount']}",
@@ -83,7 +83,7 @@ async def send_dmg_cal_msg(
             f"技能DPS：{float(dps['skill']['dps']):.2f}",
             f"技能HPS：{float(dps['skill']['hps']):.2f}"
         ]
-    elif await check_specs(base_char_info.skill_id, "token"):  # 召唤物
+    elif await check_specs(char_info.skill_id, "token"):  # 召唤物
         forward_msg = base_forward_msg + [
             f"攻击力：{dps['skill']['atk']:.2f}",
             f"攻击次数：{dps['skill']['dur']['hitCount']}",
@@ -117,10 +117,10 @@ async def send_char_curve_msg(
     logger.info(f"参数：{raw_mes}")
     mes = await handle_mes(raw_mes.split())
     logger.info(f"参数：{mes}")
-    base_char_info = InitChar(mes)
-    char = Character(base_char_info)
+    char_info = InitChar(mes)
+    char = Character(char_info)
     enemy = Enemy(default_enemy)
-    img = await cal_(base_char_info, char, enemy)
+    img = await cal_(char_info, char, enemy)
     if img is not None:
         await matcher.finish(MessageSegment.image(img))
     else:
@@ -171,10 +171,10 @@ async def send_set_enemy_msg(
 
 async def test(message_list: list):
     mes = await handle_mes(message_list)
-    base_char_info = InitChar(mes)
-    char = Character(base_char_info)
+    char_info = InitChar(mes)
+    char = Character(char_info)
     enemy = Enemy({'defense': 0, 'magicResistance': 0, 'count': 1, 'hp': 0})
-    dps = await calculate_dps(base_char_info, char, enemy)
+    dps = await calculate_dps(char_info, char, enemy)
     print(dps['log'])
 
 

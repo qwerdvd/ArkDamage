@@ -50,12 +50,12 @@ async def get_buffed_attributes(basic, buffs) -> dict:
     return final
 
 
-async def extract_damage_type(base_char_info: InitChar, char: Character, is_skill, skill_blackboard, options) -> int:
+async def extract_damage_type(char_info: InitChar, char: Character, is_skill, skill_blackboard, options) -> int:
     char_data = char.CharData
     skill_desc = char.LevelData.description
-    char_id = base_char_info.char_id
+    char_id = char_info.char_id
     sp_id = char_data.subProfessionId
-    skill_id = base_char_info.skill_id
+    skill_id = char_info.skill_id
     ret = 0
 
     if char_data.profession == 'MEDIC' and sp_id != 'incantationmedic':
@@ -82,33 +82,33 @@ async def extract_damage_type(base_char_info: InitChar, char: Character, is_skil
             _r = await check_specs(skill_id, "token_damage_type")
             if _r is not None:
                 ret = _r
-            if skill_id == "skchr_ling_3" and base_char_info.options.get("ling_fusion"):
+            if skill_id == "skchr_ling_3" and char_info.options.get("ling_fusion"):
                 ret = 1
 
-    elif base_char_info.options.get('token'):
+    elif char_info.options.get('token'):
         ret = await check_specs(char_id, "token_damage_type") or ret
         if skill_id in ["skchr_mgllan_3"]:
             ret = 0
-        elif skill_id == "skchr_ling_2" or (skill_id == "skchr_ling_3" and base_char_info.options.get("ling_fusion")):
+        elif skill_id == "skchr_ling_2" or (skill_id == "skchr_ling_3" and char_info.options.get("ling_fusion")):
             ret = 1
 
     return int(ret)
 
 
-async def calculate_attack(base_char_info: InitChar, char: Character, enemy, raid_blackboard, is_skill, log):
+async def calculate_attack(char_info: InitChar, char: Character, enemy, raid_blackboard, is_skill, log):
     display_names = char.displayNames
     char_data = char.CharData
     level_data = char.LevelData
-    char_id = base_char_info.char_id
+    char_id = char_info.char_id
     buff_list = char.buffList
     blackboard = BlackBoard(buff_list['skill'])
     basic_frame = char.attributesKeyFrames
-    options = base_char_info.options
+    options = char_info.options
 
     # 备注信息
     if is_skill and await check_specs(char_id, 'note'):
         log.write_note(await check_specs(char_id, 'note'))
-    if options.get('equip') and base_char_info.equip_id:
+    if options.get('equip') and char_info.equip_id:
         log.write_note('满足模组触发条件')
 
     # 计算面板属性
@@ -117,18 +117,18 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
     for buff in buff_list:
         buff_name = buff_list[buff]['id'] if buff == "skill" else buff
         if not await check_specs(buff_name, 'crit'):
-            buff_frame = await apply_buff(base_char_info, char, buff_frame, buff, buff_list[buff],
+            buff_frame = await apply_buff(char_info, char, buff_frame, buff, buff_list[buff],
                                           is_skill, False, log, enemy)
 
     # 计算团辅
     # log.write('**【团辅计算】**')
     if options.get('buff'):
-        buff_frame = await apply_buff(base_char_info, char, buff_frame, 'raidBuff', raid_blackboard,
+        buff_frame = await apply_buff(char_info, char, buff_frame, 'raidBuff', raid_blackboard,
                                       is_skill, False, log, enemy)
 
     # 攻击类型
     # log.write('**【攻击类型】**')
-    damage_type = await extract_damage_type(base_char_info, char, is_skill, blackboard, options)
+    damage_type = await extract_damage_type(char_info, char, is_skill, blackboard, options)
     if damage_type == 2:
         buff_frame['atk_scale'] *= buff_frame['heal_scale']
 
@@ -182,11 +182,11 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         log.write("**【暴击Buff计算】**")
         for buff in buff_list:
             # buff_name = blackboard.id if buff == "skill" else buff
-            crit_buff_frame = await apply_buff(base_char_info, char, crit_buff_frame, buff,
+            crit_buff_frame = await apply_buff(char_info, char, crit_buff_frame, buff,
                                                buff_list[buff], is_skill, True, log, enemy)
         # 计算团辅
         if options.get('buff'):
-            crit_buff_frame = await apply_buff(base_char_info, char, crit_buff_frame, "raidBuff",
+            crit_buff_frame = await apply_buff(char_info, char, crit_buff_frame, "raidBuff",
                                                raid_blackboard, is_skill, True, log, enemy)
         crit_frame = await get_buffed_attributes(basic_frame, crit_buff_frame)
 
@@ -275,7 +275,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         buff_name = buff_list[b]['id'] if b == 'skill' else b
         if await check_specs(buff_name, "keep_debuff") and buff_name not in enemy_buff_frame:
             log.write_note("假设全程覆盖Debuff")
-            enemy_buff_frame = await apply_buff(base_char_info, char, enemy_buff_frame, buff_name,
+            enemy_buff_frame = await apply_buff(char_info, char, enemy_buff_frame, buff_name,
                                                 buff_list[b], True, False, log, enemy)
     edef = max(0, ((enemy.defense + enemy_buff_frame['edef']) * enemy_buff_frame['edef_scale'] - enemy_buff_frame[
         'edef_pene']) * (1 - enemy_buff_frame['edef_pene_scale']))
@@ -295,7 +295,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         sks = [1]
         if is_skill and blackboard.id == "skchr_leizi_2":
             scale = 1
-        elif base_char_info.equip_id and battle_equip_table[base_char_info.equip_id]:
+        elif char_info.equip_id and battle_equip_table[char_info.equip_id]:
             scale = basic_frame["equip_blackboard"]["trait"]["attack@chain.atk_scale"]
         elif char_data.subProfessionId == "chainhealer":
             prefab_id = char_id.replace("char", "tachr") + "_trait"
@@ -311,7 +311,7 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
         log.write("[特殊] 链式攻击: 连锁倍率: [{}], 平均伤害倍率 {:.2f}x".format(sks_str, buff_frame['damage_scale']))
 
     # 计算攻击次数和持续时间
-    dur = await calc_durations(base_char_info, char, is_skill, attack_time, final_frame['attackSpeed'],
+    dur = await calc_durations(char_info, char, is_skill, attack_time, final_frame['attackSpeed'],
                                buff_frame, ecount, log)
 
     # 计算边缘情况
@@ -1260,11 +1260,11 @@ async def calculate_attack(base_char_info: InitChar, char: Character, enemy, rai
                     # 计算本体属性。狼的法伤不享受特性加成
                     vigil_final_atk = final_frame['atk']
                     if options.get("token"):
-                        token_id = base_char_info.char_id
-                        base_char_info.char_id = "char_427_vigil"
-                        vigil = await get_attributes(base_char_info, char, NoLog())
+                        token_id = char_info.char_id
+                        char_info.char_id = "char_427_vigil"
+                        vigil = await get_attributes(char_info, char, NoLog())
                         vigil_final = await get_buffed_attributes(vigil.attributesKeyFrames, buff_frame)
-                        base_char_info.char_id = token_id
+                        char_info.char_id = token_id
                         vigil_final_atk = vigil_final['atk']
                         if not options['cond']:
                             log.write_note("必定满足阻挡条件")

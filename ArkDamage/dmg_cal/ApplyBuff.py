@@ -7,16 +7,16 @@ from .model.models import BlackBoard
 
 
 async def apply_buff(
-        base_char_info: InitChar, char: Character, buff_frm, tag,
+        char_info: InitChar, char: Character, buff_frm, tag,
         blackbd, is_skill, is_crit, log, enemy
 ) -> dict:
     display_names = char.displayNames
     buff_frame = buff_frm if buff_frm else init_buff_frame()
     blackboard = BlackBoard(blackbd)
     basic = char.attributesKeyFrames
-    char_id = base_char_info.char_id
+    char_id = char_info.char_id
     skill_id = char.buffList['skill']['id']
-    options = base_char_info.options
+    options = char_info.options
 
     # 如果是技能期间，则取得技能ID, 否则不计算技能
     # specialtags里标示的（spType != 8的）被动技能：一直生效
@@ -319,7 +319,7 @@ async def apply_buff(
                     blackboard.atk_scale = blackboard.value('atk_scale_up')
                     log.write_note("周围有3个敌人")
                 case "tachr_363_toddi_1":
-                    if char.buffList["uniequip_002_toddi"] and base_char_info.equipLevel >= 2:
+                    if char.buffList["uniequip_002_toddi"] and char_info.equipLevel >= 2:
                         blackboard.atk_scale = char.buffList['uniequip_002_toddi']['talent']['atk_scale']
                 case "tachr_4062_totter_1":
                     del blackboard.atk_scale
@@ -1038,7 +1038,7 @@ async def apply_buff(
                 blackboard.max_target = 5
             case "tachr_4055_bgsnow_2":  # 判断value。具体值存在召唤物的talent里，本体判断只能写死
                 bgsnow_t2_value = -0.18
-                if base_char_info.potentialRank >= 4:
+                if char_info.potentialRank >= 4:
                     bgsnow_t2_value = -0.2
                 if options.get('cond_near'):  # 周围4格
                     bgsnow_t2_value -= 0.05

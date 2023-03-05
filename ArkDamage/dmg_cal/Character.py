@@ -74,18 +74,18 @@ class Character(Attributes):
     buffList: dict = {}
     displayNames: dict = {}
 
-    def __init__(self, base_char_info: InitChar):
+    def __init__(self, char_info: InitChar):
         super().__init__()
-        self.CharData = CharacterData(character_table[base_char_info.char_id])
-        phase = base_char_info.phase
+        self.CharData = CharacterData(character_table[char_info.char_id])
+        phase = char_info.phase
         self.PhaseData = self.CharData.phases[phase]
         self.attributesKeyFrames = {}
         self.buffs = init_buff_frame()
         self.buffList = {}
-        self.SkillData = SkillData(skill_table[base_char_info.skill_id])
-        self.LevelData = self.SkillData.levels[base_char_info.skillLevel]
-        if base_char_info.equip_id in battle_equip_table.keys():
+        self.SkillData = SkillData(skill_table[char_info.skill_id])
+        self.LevelData = self.SkillData.levels[char_info.skillLevel]
+        if char_info.equip_id in battle_equip_table.keys():
             self.UniEquipData = UniequipData(
-                battle_equip_table[base_char_info.equip_id])
+                battle_equip_table[char_info.equip_id])
         else:
             self.UniEquipData = None
