@@ -1,4 +1,4 @@
-<div style="text-align: center">
+<div align="center">
   <img width="200" src="https://v2.nonebot.dev/logo.png" alt="logo">
 
 # ArkDamage
@@ -7,7 +7,7 @@ _✨基于 [nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https
 
 </div>
 
-<div style="text-align: center">
+<div align="center">
   <a href="https://raw.githubusercontent.com/cscs181/QQ-Github-Bot/master/LICENSE">
     <img src="https://img.shields.io/github/license/cscs181/QQ-Github-Bot.svg" alt="license">
   </a>
