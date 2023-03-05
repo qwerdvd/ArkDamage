@@ -1,10 +1,10 @@
 from typing import Union
 
 from . import InitChar
-from .load_json import character_table, skill_table, battle_equip_table
-from .model.battle_equip_data import UniequipData
-from .model.char_data import CharacterData, CharPhaseData
-from .model.skill_data import SkillData, SkillLevelData
+from ..load_json import character_table, skill_table, battle_equip_table
+from ..model.battle_equip_data import UniequipData
+from ..model.char_data import CharacterData, CharPhaseData
+from ..model.skill_data import SkillData, SkillLevelData
 
 AttributeKeys = [
     'atk',

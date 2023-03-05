@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from . import InitChar
 from .CalCharAttributes import check_specs
-from .Character import init_buff_frame, Character
+from .model.Character import init_buff_frame, Character
 from .model.models import BlackBoard
 
 

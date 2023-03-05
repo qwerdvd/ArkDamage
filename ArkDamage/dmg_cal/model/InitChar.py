@@ -1,48 +1,6 @@
 from pydantic import BaseModel, Field
 
-from .load_json import dps_options, character_table
-from ..utils.alias.chEquipName_to_EquipId import ch_equip_name_to_equip_id
-from ..utils.alias.chName_to_CharacterId_list import ch_name_to_character_id
-from ..utils.alias.chSkillName_to_SkillId import ch_skill_name_to_skill_id
-
-DEFAULT_VALUES = {
-    0: '能天使',
-    1: '满潜',
-    2: '精二90',
-    3: '三技能',
-    4: 'None'
-}
-
-
-async def handle_mes(mes: list) -> list:
-    """
-    :说明:
-        处理 bot 传来的参数
-        标准化参数
-    :参数:
-        * mes: list
-            bot 传来的参数
-    :返回:
-        * mes: list
-            标准化后的参数
-    """
-    mes = mes[:5] + [None] * (5 - len(mes))  # 补足长度
-
-    if not mes[0]:
-        mes[0] = DEFAULT_VALUES[0]
-
-    mes[1] = mes[1].replace('满潜', '6').replace('六潜', '6') \
-        .replace('五潜', '5').replace('四潜', '4').replace('三潜', '3').replace(
-        '二潜', '2').replace('一潜', '1').replace('零潜', '0')
-    mes[2] = mes[2].replace('精零', '0').replace('精一', '1').replace('精二', '2')
-    mes[3] = mes[3].replace('一技能', '0').replace('二技能', '1').replace('三技能', '2')
-    mes[3] = await ch_skill_name_to_skill_id(mes[0], mes[3])
-    mes[0] = await ch_name_to_character_id(str(mes[0]))
-    uniequip_id = mes[4].replace('None', '0').replace(
-        '一模', '1').replace('二模', '2').replace('none', '0') if mes[3] else '0'
-    mes[4] = await ch_equip_name_to_equip_id(mes[0], uniequip_id)
-
-    return mes
+from ..load_json import dps_options, character_table
 
 
 class InitChar(BaseModel):

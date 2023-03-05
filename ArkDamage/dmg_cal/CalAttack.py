@@ -8,9 +8,9 @@ from .CalAnimation import calculate_animation
 from .CalCharAttributes import check_specs, get_attributes
 from .CalDurations import calc_durations, check_reset_attack
 from .CalGradDamage import calculate_grad_damage
-from .Character import init_buff_frame, AttributeKeys, Character
 from .load_json import battle_equip_table
 from .log import NoLog
+from .model.Character import init_buff_frame, AttributeKeys, Character
 from .model.models import Dur, BlackBoard
 
 

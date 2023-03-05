@@ -1,8 +1,9 @@
 import asyncio
 import json
 
-from ..dmg_cal.RESOURCE_PATH import MAP_PATH, resVersion, CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH
+from .download_resource.RESOURCE_PATH import MAP_PATH, CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH
 from ..dmg_cal.load_json import character_table
+from ..version import resVersion
 
 
 async def generate_ch_skill_name_to_skill_id_mapping():
