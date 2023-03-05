@@ -12,19 +12,19 @@ class Log:
         return self.log
 
     def write_buff(self, line):
-        self.buff_list.append(line)
+        self.buff_list += line
 
     def write_loop(self, line):
-        self.loop_list.append(line)
+        self.loop_list += line
 
     def write_edge(self, line):
-        self.edge_list.append(line)
+        self.edge_list += line
 
     def write_final(self, line):
-        self.final_list.append(line)
+        self.final_list += line
 
     def write_damage(self, line):
-        self.damage_list.append(line)
+        self.damage_list += line
 
     def write(self, line):
         # 处理成markdown格式

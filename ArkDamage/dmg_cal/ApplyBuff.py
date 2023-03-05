@@ -1,14 +1,17 @@
 from decimal import Decimal
+from typing import Union
 
 from . import InitChar
 from .CalCharAttributes import check_specs
+from .log import Log, NoLog
 from .model.Character import init_buff_frame, Character
-from .model.models import BlackBoard
+from .model.models import BlackBoard, Enemy
+from .model.raid_buff import RaidBlackboard
 
 
 async def apply_buff(
-        char_info: InitChar, char: Character, buff_frm, tag,
-        blackbd, is_skill, is_crit, log, enemy
+        char_info: InitChar, char: Character, buff_frm: dict, tag: str,
+        blackbd: Union[RaidBlackboard, dict], is_skill: bool, is_crit: bool, log: Union[Log, NoLog], enemy: Enemy
 ) -> dict:
     display_names = char.displayNames
     buff_frame = buff_frm if buff_frm else init_buff_frame()

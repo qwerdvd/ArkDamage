@@ -4,11 +4,15 @@ from . import InitChar, Character
 from .CalAttack import calculate_attack
 from .CalCharAttributes import check_specs, get_attributes, get_blackboard
 from .load_json import uniequip_table, character_table, skill_table
-from .log import Log
+from .log import Log, NoLog
+from .model.models import Enemy
 from .model.raid_buff import RaidBlackboard
 
 
-async def get_token_atk_hp(char_info: InitChar, char: Character, token_id, log):
+async def get_token_atk_hp(
+        char_info: InitChar, char: Character,
+        token_id: str, log: Log | NoLog
+) -> Character:
     old_char = char.attributesKeyFrames.copy()
     token_name = character_table[token_id]["name"]
     char_info.charId = token_id
@@ -83,7 +87,9 @@ async def get_token_atk_hp(char_info: InitChar, char: Character, token_id, log):
     return char
 
 
-async def calculate_dps(char_info: InitChar, char: Character, enemy) -> dict or None:
+async def calculate_dps(
+        char_info: InitChar, char: Character, enemy: Enemy
+) -> dict or None:
     log = Log()
     raid_buff = {'atk': 0, 'atkpct': 0, 'ats': 0, 'cdr': 0, 'base_atk': 0, 'damage_scale': 0}
     raid_blackboard = RaidBlackboard({

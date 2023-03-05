@@ -8,7 +8,7 @@ from ..utils.download_resource.RESOURCE_PATH import (
 )
 
 
-def load_json_file(path):
+def load_json_file(path: str) -> dict:
     with open(path, 'r', encoding='utf-8') as file:
         return json.load(file)
 

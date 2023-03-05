@@ -2,9 +2,13 @@ import math
 
 from .CalCharAttributes import check_specs
 from .load_json import character_table, dps_anim
+from .log import Log
 
 
-async def calculate_animation(char_id, skill_id, is_skill, attack_time, attack_speed, log):
+async def calculate_animation(
+        char_id: str, skill_id: str, is_skill: bool,
+        attack_time: float, attack_speed: int, log: Log
+):
     _fps = 30
     char_data = character_table[str(char_id)]
     anim_data = dps_anim.get(char_id, {})

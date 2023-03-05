@@ -4,11 +4,14 @@ from decimal import Decimal
 from . import InitChar, Character
 from .CalCharAttributes import check_specs
 from .load_json import dps_anim
+from .log import Log
 from .model.models import BlackBoard, Dur
 
 
 # 重置普攻判定
-async def check_reset_attack(key, blackboard, options):
+async def check_reset_attack(
+        key: str, blackboard: BlackBoard, options: dict
+):
     if await check_specs(key, "reset_attack") == "false":
         return False
     elif await check_specs(key, "overdrive") and not options.get('overdrive_mode'):
@@ -22,8 +25,10 @@ async def check_reset_attack(key, blackboard, options):
         )
 
 
-async def calc_durations(char_info: InitChar, char: Character, is_skill, attack_time,
-                         attack_speed, buff_frame, enemy_count, log) -> Dur:
+async def calc_durations(
+        char_info: InitChar, char: Character, is_skill: bool, attack_time: float,
+        attack_speed: int, buff_frame: dict, enemy_count: int, log: Log
+) -> Dur:
     options = char_info.options
     char_id = char_info.char_id
     display_names = char.displayNames

@@ -1,6 +1,7 @@
 import json
 import math
 from decimal import Decimal
+from typing import Union
 
 from . import InitChar
 from .ApplyBuff import apply_buff
@@ -9,13 +10,17 @@ from .CalCharAttributes import check_specs, get_attributes
 from .CalDurations import calc_durations, check_reset_attack
 from .CalGradDamage import calculate_grad_damage
 from .load_json import battle_equip_table
-from .log import NoLog
+from .log import NoLog, Log
 from .model.Character import init_buff_frame, AttributeKeys, Character
-from .model.models import Dur, BlackBoard
+from .model.models import Dur, BlackBoard, Enemy
+from .model.raid_buff import RaidBlackboard
 
 
 # 计算边缘情况
-async def calc_edges(blackboard: BlackBoard, frame, dur: Dur, log) -> None:
+async def calc_edges(
+        blackboard: BlackBoard, frame: int,
+        dur: Dur, log: Log
+) -> Dur:
     skill_id = blackboard.id
     attack_begin = await check_specs(skill_id, "attack_begin") or 12  # 抬手时间
     attack_begin = math.ceil((attack_begin - 1) * 100 / dur.attackSpeed + 1)
@@ -36,9 +41,13 @@ async def calc_edges(blackboard: BlackBoard, frame, dur: Dur, log) -> None:
         log.write('** 技能结束时，可能正在抬手 **')
 
     dur.remain_frame = remain_frame
+    return dur
 
 
-async def get_buffed_attributes(basic, buffs) -> dict:
+async def get_buffed_attributes(
+        basic: dict,
+        buffs: dict
+) -> dict:
     final = basic.copy()
     for key in AttributeKeys:
         if key in buffs:
@@ -50,7 +59,10 @@ async def get_buffed_attributes(basic, buffs) -> dict:
     return final
 
 
-async def extract_damage_type(char_info: InitChar, char: Character, is_skill, skill_blackboard, options) -> int:
+async def extract_damage_type(
+        char_info: InitChar, char: Character, is_skill: bool,
+        skill_blackboard: BlackBoard, options: dict
+) -> int:
     char_data = char.CharData
     skill_desc = char.LevelData.description
     char_id = char_info.char_id
@@ -95,7 +107,10 @@ async def extract_damage_type(char_info: InitChar, char: Character, is_skill, sk
     return int(ret)
 
 
-async def calculate_attack(char_info: InitChar, char: Character, enemy, raid_blackboard, is_skill, log):
+async def calculate_attack(
+        char_info: InitChar, char: Character, enemy: Enemy,
+        raid_blackboard: RaidBlackboard, is_skill: bool, log: Union[Log, NoLog]
+):
     display_names = char.displayNames
     char_data = char.CharData
     level_data = char.LevelData
@@ -317,7 +332,7 @@ async def calculate_attack(char_info: InitChar, char: Character, enemy, raid_bla
     # 计算边缘情况
     rst = await check_reset_attack(blackboard.id, blackboard, options)
     if rst and rst != "ogcd" and is_skill:
-        await calc_edges(blackboard, frame, dur, log)
+        dur = await calc_edges(blackboard, frame, dur, log)
 
     # 暴击次数
     if options.get('crit') and crit_buff_frame.get("prob"):

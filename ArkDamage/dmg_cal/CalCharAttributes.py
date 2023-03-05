@@ -1,21 +1,27 @@
 import math
 from decimal import Decimal
+from typing import Union
 
 from . import Character, InitChar
 from .load_json import specs
+from .log import Log, NoLog
 from .model.Character import AttributeKeys
 from .model.char_data import CharacterData
 from ..utils.math_model import get_attribute
 
 
-async def check_specs(tag: str, spec: str) -> bool or int or str:
+async def check_specs(
+        tag: str, spec: str
+) -> bool or int or str:
     if tag in specs and spec in specs[tag]:
         return specs[tag][spec]
     else:
         return False
 
 
-async def cal_basic_attributes(char_info: InitChar, char: Character) -> dict:
+async def cal_basic_attributes(
+        char_info: InitChar, char: Character
+) -> dict:
     """
     :说明:
         计算基础属性，包括等级和潜能
@@ -59,7 +65,9 @@ PotentialAttributeTypeList = {
 }
 
 
-async def apply_potential(char_data: CharacterData, rank: int, basic: dict, log) -> dict:
+async def apply_potential(
+        char_data: CharacterData, rank: int, basic: dict, log: NoLog
+) -> dict:
     if not char_data.potentialRanks or len(char_data.potentialRanks) == 0:
         return basic
     for i in range(rank):
@@ -76,14 +84,18 @@ async def apply_potential(char_data: CharacterData, rank: int, basic: dict, log)
     return basic
 
 
-async def get_blackboard(blackboard_array) -> dict:
+async def get_blackboard(
+        blackboard_array: list
+) -> dict:
     for item in blackboard_array:
         if item.key == "def":
             item.key = "defense"
     return {item.key: item.value for item in blackboard_array}
 
 
-async def get_dict_blackboard(blackboard_array) -> dict:
+async def get_dict_blackboard(
+        blackboard_array: dict
+) -> dict:
     blackboard = {}
     for item in blackboard_array:
         if item['key'] == "def":
@@ -92,7 +104,9 @@ async def get_dict_blackboard(blackboard_array) -> dict:
     return blackboard
 
 
-async def apply_equip(char: Character, char_info: InitChar, basic: dict, log) -> dict:
+async def apply_equip(
+        char: Character, char_info: InitChar, basic: dict, log: NoLog
+) -> dict:
     equip_id = char_info.equip_id
     phase = char_info.equipLevel - 1
     # cand = 0
@@ -163,7 +177,9 @@ async def apply_equip(char: Character, char_info: InitChar, basic: dict, log) ->
     return basic
 
 
-async def get_attributes(char_info: InitChar, char: Character, log) -> Character:
+async def get_attributes(
+        char_info: InitChar, char: Character, log: Union[Log, NoLog]
+) -> Character:
     phase_data = char.CharData.phases[char_info.phase]
     display_names = char.displayNames
     if char_info.char_id.startswith('token'):

@@ -9,6 +9,8 @@ from .CalCharAttributes import get_blackboard, get_attributes, check_specs
 from .CalDps import get_token_atk_hp
 from .load_json import uniequip_table
 from .log import NoLog
+from .model.Character import Character
+from .model.InitChar import InitChar
 from .model.models import Enemy, BlackBoard
 from .model.raid_buff import RaidBlackboard
 
@@ -28,9 +30,11 @@ LabelNames = {
 }
 
 
-async def cal_(char_info, char, enemy):
+async def cal_(
+        char_info: InitChar, char: Character, enemy: Enemy
+):
     backup_defense = enemy.defense
-    backup_magicResistance = enemy.magicResistance
+    backup_magic_resistance = enemy.magicResistance
     def_plot_data = await calculate_dps_series(
         char_info, char, enemy, 'defense', EnemySeries['defense']
     )
@@ -38,7 +42,7 @@ async def cal_(char_info, char, enemy):
     mag_plot_data = await calculate_dps_series(
         char_info, char, enemy, 'magicResistance', EnemySeries['magicResistance']
     )
-    enemy.change('magicResistance', backup_magicResistance)  # reset magicResistance
+    enemy.change('magicResistance', backup_magic_resistance)  # reset magicResistance
 
     damage_type = await extract_damage_type(
         char_info, char, True, BlackBoard(char.buffList['skill']), char_info.options
@@ -100,7 +104,10 @@ async def cal_(char_info, char, enemy):
     return buf
 
 
-async def calculate_dps_series(char_info, char, enemy: Enemy, _key: str, series) -> dict:
+async def calculate_dps_series(
+        char_info: InitChar, char: Character, enemy: Enemy,
+        _key: str, series: list
+) -> dict or None:
     log = NoLog()
     raid_buff = {'atk': 0, 'atkpct': 0, 'ats': 0, 'cdr': 0, 'base_atk': 0, 'damage_scale': 0}
     raid_blackboard = RaidBlackboard({
@@ -156,12 +163,12 @@ async def calculate_dps_series(char_info, char, enemy: Enemy, _key: str, series)
             char.attributesKeyFrames = dict(_backup["basic"])
             skill_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
             if not skill_attack:
-                return
+                return None
 
             char.attributesKeyFrames = dict(_backup["basic"])
             normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
             if not normal_attack:
-                return
+                return None
         else:
             char.attributesKeyFrames = dict(_backup["basic"])
             od_p1 = await calculate_attack(char_info, char, enemy, raid_blackboard, True, log)
@@ -190,7 +197,7 @@ async def calculate_dps_series(char_info, char, enemy: Enemy, _key: str, series)
             char_info.options["overdrive_mode"] = False
             normal_attack = await calculate_attack(char_info, char, enemy, raid_blackboard, False, log)
             if not normal_attack:
-                return
+                return None
 
         global_dps = round((Decimal(normal_attack['totalDamage']) + Decimal(skill_attack['totalDamage'])) /
                            Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
