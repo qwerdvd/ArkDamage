@@ -1,7 +1,7 @@
 import json
 
-from .RESOURCE_PATH import (
-    DPS_ANIM_PATH, DPS_OPTIONS_PATH, DPS_SPECIALTAGS_PATH,
+from ..utils.download_resource.RESOURCE_PATH import (
+    DPS_ANIMATION_PATH, DPS_OPTIONS_PATH, DPS_SPECIALTAGS_PATH,
     CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH, BATTLE_EQUIP_TABLE_PATH,
     CHARACTERID_CHNAME_MAP_PATH, SKILL_TABLE_PATH,
     CHEQUIPNAME_TO_EQUIPID_MAP_PATH, CHSKILLNAME_TO_SKILLID_MAP_PATH, ENEMYDATA_PATH
@@ -17,7 +17,7 @@ def load():
     character_id_and_ch_name = load_json_file(CHARACTERID_CHNAME_MAP_PATH)
     ch_equip_name_to_equip_id = load_json_file(CHEQUIPNAME_TO_EQUIPID_MAP_PATH)
     ch_skill_name_to_skill_id = load_json_file(CHSKILLNAME_TO_SKILLID_MAP_PATH)
-    anim = load_json_file(DPS_ANIM_PATH)
+    anim = load_json_file(DPS_ANIMATION_PATH)
     options = load_json_file(DPS_OPTIONS_PATH)
     special = load_json_file(DPS_SPECIALTAGS_PATH)
     character = load_json_file(CHARACTER_TABLE_PATH)

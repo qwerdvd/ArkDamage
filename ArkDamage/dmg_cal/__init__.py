@@ -13,11 +13,11 @@ from .CalDps import calculate_dps
 from .CalDpsSeries import cal_
 from .Character import Character
 from .InitChar import InitChar, handle_mes
-from .RESOURCE_PATH import MAIN_PATH
 from .load_json import enemy_database
 from .model.enemy_data import EnemyDataBase
 from .model.models import Enemy
 from ..resource.check_version import get_ark_version
+from ..utils.download_resource.RESOURCE_PATH import MAIN_PATH
 from ..utils.message.send_msg import send_forward_msg
 
 IsAdmin = permission.GROUP_OWNER | permission.GROUP_ADMIN | SUPERUSER
