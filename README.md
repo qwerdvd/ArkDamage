@@ -3,7 +3,7 @@
 
 # ArkDamage
 
-_✨基于 [nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp)的**Arknights**干员 DPS 计算器✨_
+_✨基于 [nonebot2](https://github.com/nonebot/nonebot2) 和 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 **Arknights** 干员 DPS 计算器✨_
 
 </div>
 
