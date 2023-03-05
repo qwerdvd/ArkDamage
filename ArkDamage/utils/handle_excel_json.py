@@ -1,10 +1,8 @@
 import asyncio
 import json
 
-from src.plugins.ArkDamage import CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH, MAP_PATH
-from src.plugins.ArkDamage import character_table
-
-resVersion = "23-01-30-14-05-02-06c33f"
+from ..dmg_cal.RESOURCE_PATH import MAP_PATH, resVersion, CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH
+from ..dmg_cal.load_json import character_table
 
 
 async def generate_ch_skill_name_to_skill_id_mapping():

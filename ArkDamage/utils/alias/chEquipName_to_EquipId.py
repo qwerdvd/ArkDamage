@@ -1,4 +1,4 @@
-from src.plugins.ArkDamage.ArkDamage.dmg_cal.load_json import ch_equip_name_to_equip_id_data
+from ...dmg_cal.load_json import ch_equip_name_to_equip_id_data
 
 
 async def ch_equip_name_to_equip_id(character_id: str, uniequip_id: int) -> str or None:
