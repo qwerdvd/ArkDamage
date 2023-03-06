@@ -1,10 +1,11 @@
 from decimal import Decimal
 
-from . import InitChar, Character
 from .CalAttack import calculate_attack
 from .CalCharAttributes import check_specs, get_attributes, get_blackboard
 from .load_json import uniequip_table, character_table, skill_table
 from .log import Log, NoLog
+from .model import Character
+from .model.InitChar import InitChar
 from .model.models import Enemy
 from .model.raid_buff import RaidBlackboard
 

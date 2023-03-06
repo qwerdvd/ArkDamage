@@ -3,7 +3,6 @@ import math
 from decimal import Decimal
 from typing import Union
 
-from . import InitChar
 from .ApplyBuff import apply_buff
 from .CalAnimation import calculate_animation
 from .CalCharAttributes import check_specs, get_attributes
@@ -12,6 +11,7 @@ from .CalGradDamage import calculate_grad_damage
 from .load_json import battle_equip_table
 from .log import NoLog, Log
 from .model.Character import init_buff_frame, AttributeKeys, Character
+from .model.InitChar import InitChar
 from .model.models import Dur, BlackBoard, Enemy
 from .model.raid_buff import RaidBlackboard
 
@@ -418,7 +418,7 @@ async def calculate_attack(
             min_rate = options.get('cond') if buff_list["tachr_366_acdrop_1"]['atk_scale_2'] else buff_list[
                 "tachr_366_acdrop_1"].atk_scale
         if damage_type == 0:
-            ret = max(frame['atk'] - edef, frame['atk'] * Decimal(min_rate))
+            ret = max(frame['atk'] - Decimal(edef), frame['atk'] * Decimal(min_rate))
         elif damage_type == 1:
             ret = max(frame['atk'] * Decimal(1 - emrpct), frame['atk'] * Decimal(min_rate))
         else:

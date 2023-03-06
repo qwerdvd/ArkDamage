@@ -1,10 +1,11 @@
 import math
 from decimal import Decimal
 
-from . import InitChar, Character
 from .CalCharAttributes import check_specs
 from .load_json import dps_anim
 from .log import Log
+from .model import Character
+from .model.InitChar import InitChar
 from .model.models import BlackBoard, Dur
 
 

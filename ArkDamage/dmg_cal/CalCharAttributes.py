@@ -2,10 +2,11 @@ import math
 from decimal import Decimal
 from typing import Union
 
-from . import Character, InitChar
 from .load_json import specs
 from .log import Log, NoLog
+from .model import Character
 from .model.Character import AttributeKeys
+from .model.InitChar import InitChar
 from .model.char_data import CharacterData
 from ..utils.math_model import get_attribute
 

@@ -1,10 +1,10 @@
 from decimal import Decimal
 from typing import Union
 
-from . import InitChar
 from .CalCharAttributes import check_specs
 from .log import Log, NoLog
 from .model.Character import init_buff_frame, Character
+from .model.InitChar import InitChar
 from .model.models import BlackBoard, Enemy
 from .model.raid_buff import RaidBlackboard
 
