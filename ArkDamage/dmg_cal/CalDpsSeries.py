@@ -2,7 +2,9 @@ import io
 from decimal import Decimal
 
 import matplotlib.pyplot as plt
+import numpy as np
 from nonebot import logger
+from scipy.interpolate import griddata
 
 from .CalAttack import calculate_attack, extract_damage_type
 from .CalCharAttributes import get_blackboard, get_attributes, check_specs
@@ -15,8 +17,9 @@ from .model.models import Enemy, BlackBoard
 from .model.raid_buff import RaidBlackboard
 
 EnemySeries = {
-    "defense": [x * 100 for x in range(31)],
-    "magicResistance": [x * 5 for x in range(21)],
+    "defense": [x * 50 for x in range(51)],
+    "magicResistance": [x * 2 for x in range(51)],
+    "def_mag": [(x * 60, y * 2) for x in range(51) for y in range(51)],
     "count": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 }
 
@@ -28,6 +31,40 @@ LabelNames = {
     "s_dps": "技能DPS",
     "s_dmg": "技能总伤害"
 }
+
+
+async def cal_3d(
+        char_info: InitChar, char: Character, enemy: Enemy
+):
+    def_mag_plot_data = await calculate_dps_series(
+        char_info, char, enemy, 'def_mag', EnemySeries['def_mag']
+    )
+    data = []
+    for i in range(0, len(def_mag_plot_data), 2):
+        tup = (def_mag_plot_data[i][0], def_mag_plot_data[i][1], def_mag_plot_data[i + 1])
+        data.append(tup)
+    data = np.array(data)
+
+    fig = plt.figure(dpi=500)
+    ax = fig.add_subplot(111, projection='3d')
+
+    x, y, z = data[:, 0], data[:, 1], data[:, 2]
+    X, Y = np.meshgrid(np.linspace(np.min(x), np.max(x), 150), np.linspace(np.min(y), np.max(y), 150))
+    Z = griddata((x, y), z, (X, Y), method='cubic')
+
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='coolwarm', alpha=0.5)
+
+    ax.view_init(30, 115)
+    # Label the axes
+    ax.set_xlabel('Defense')
+    ax.set_ylabel('magicResistance')
+    ax.set_zlabel('DPS')
+
+    # Convert the plot to bytes
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    return buf
 
 
 async def cal_(
@@ -59,7 +96,7 @@ async def cal_(
         plot_data = def_plot_data
 
     # Plot DPS and Damage data
-    fig, ax = plt.subplots(dpi=300)
+    fig, ax = plt.subplots(dpi=500)
     plt.grid(True)
     x_dps, y_dps = [], []
     x_damage, y_damage = [], []
@@ -101,7 +138,7 @@ async def cal_(
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
-    return buf
+    return
 
 
 async def calculate_dps_series(
@@ -152,7 +189,11 @@ async def calculate_dps_series(
         prefix = "+" if delta > 0 else ""
         char.attributesKeyFrames["atk"] = round(char.attributesKeyFrames["atk"] + delta)
 
-    results = {'dps_plot_data': {}, 'damage_plot_data': {}}
+    if _key == "def_mag":
+        results = []
+    else:
+        results = {'dps_plot_data': {}, 'damage_plot_data': {}}
+
     _backup = {
         "basic": dict(char.attributesKeyFrames),
     }
@@ -202,9 +243,13 @@ async def calculate_dps_series(
         global_dps = round((Decimal(normal_attack['totalDamage']) + Decimal(skill_attack['totalDamage'])) /
                            Decimal(normal_attack['dur'].duration + normal_attack['dur'].stunDuration +
                                    skill_attack['dur']['duration'] + skill_attack['dur']['prepDuration']))
-        dps_singe_plot = [x, global_dps]
-        damage_singe_plot = [x, skill_attack['totalDamage']]
-        results['dps_plot_data'][x] = dps_singe_plot
-        results['damage_plot_data'][x] = damage_singe_plot
+        if _key == "def_mag":
+            dps_singe_plot = tuple([x, global_dps])
+            results += dps_singe_plot
+        else:
+            dps_singe_plot = [x, global_dps]
+            damage_singe_plot = [x, skill_attack['totalDamage']]
+            results['dps_plot_data'][x] = dps_singe_plot
+            results['damage_plot_data'][x] = damage_singe_plot
 
     return results

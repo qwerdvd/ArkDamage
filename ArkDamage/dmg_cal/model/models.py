@@ -50,8 +50,12 @@ class Enemy(BaseModel):
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
-    def change(self, key: str, value: int):
-        self.__dict__[key] = value
+    def change(self, key: str, value: int | tuple):
+        if key == 'def_mag':
+            self.defense = value[0]
+            self.magicResistance = value[1]
+        else:
+            self.__dict__[key] = value
 
 
 class BlackBoard:
