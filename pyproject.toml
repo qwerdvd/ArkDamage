@@ -29,7 +29,7 @@ authors = ["qwerdvd <2450899274@qq.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10.3"
+python = ">=3.10.3,<3.12"
 nonebot2 = {extras = ["fastapi"], version = "^2.0.0rc3"}
 nonebot-adapter-onebot = ">=2.1.1"
 nonebot-plugin-apscheduler = ">=0.1.4"
@@ -37,6 +37,7 @@ pydantic = "^1.10.4"
 aiohttp = "^3.8.1"
 aiofiles = "^0.8.0"
 matplotlib = "^3.7.1"
+scipy = "^1.10.1"
 
 [[tool.poetry.source]]
 name = "USTC"
