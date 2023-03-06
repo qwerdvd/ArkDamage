@@ -138,7 +138,7 @@ async def cal_(
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
-    return
+    return buf
 
 
 async def calculate_dps_series(
