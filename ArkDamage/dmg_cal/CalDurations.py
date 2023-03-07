@@ -259,6 +259,9 @@ async def calc_durations(
                 case "skchr_texas2_2":
                     log.write_note("落地1s，不影响技能时间")
                     prep_duration = 0.167
+                case "skchr_lin_2":
+                    prep_duration = 1.333
+                    log.write_note("技能开关耗费40帧")
 
             # 快速估算
             attack_count = math.ceil((level_data.duration - prep_duration) / attack_time)

@@ -1227,6 +1227,8 @@ async def apply_buff(
                 if options.get('ranged_penalty'):
                     buff_frame['atk_scale'] = 1
                     log.write_note("技能不受距离惩罚")
+            case "skchr_bison_2":
+                blackboard.defense = blackboard.value('bison_s_2[self].def')
 
     # --- applyBuff switch ends here ---
 
@@ -1281,7 +1283,7 @@ async def apply_buff(
             blackboard = bb_yuki
         case ("uniequip_002_nearl2" | "uniequip_002_franka" | "uniequip_002_peacok"
               | "uniequip_002_cqbw" | "uniequip_002_sesa" | "uniequip_003_skadi"):
-            if options.get('equip'):
+            if options.get('equip') or options.get('block'):
                 blackboard = blackboard.trait
         case "uniequip_002_skadi" | "uniequip_002_flameb" | "uniequip_002_gyuki":
             if options.get('equip'):

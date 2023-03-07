@@ -1,9 +1,35 @@
 import asyncio
 import json
+import sys
+from pathlib import Path
 
-from .download_resource.RESOURCE_PATH import MAP_PATH, CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH
-from ..dmg_cal.load_json import character_table
-from ..version import resVersion
+# from .download_resource.RESOURCE_PATH import MAP_PATH, CHARACTER_TABLE_PATH, UNIEQUIP_TABLE_PATH
+# from ..dmg_cal.load_json import character_table
+# from ..version import resVersion
+
+
+MAIN_PATH = Path() / 'data' / 'ArkDamage'
+
+sys.path.append(str(MAIN_PATH))
+
+MAP_PATH = MAIN_PATH / "map"
+EXCEL_PATH = MAIN_PATH / "excel"
+LEVEL_PATH = MAIN_PATH / "levels"
+
+BATTLE_EQUIP_TABLE_PATH = EXCEL_PATH / 'battle_equip_table.json'
+CHARACTER_TABLE_PATH = EXCEL_PATH / 'character_table.json'
+SKILL_TABLE_PATH = EXCEL_PATH / 'skill_table.json'
+UNIEQUIP_TABLE_PATH = EXCEL_PATH / 'uniequip_table.json'
+
+resVersion = "23-03-04-19-40-05-ed6f46"
+
+
+def load_json_file(path: Path) -> dict:
+    with open(path, 'r', encoding='utf-8') as file:
+        return json.load(file)
+
+
+character_table = load_json_file(CHARACTER_TABLE_PATH)
 
 
 async def generate_ch_skill_name_to_skill_id_mapping():

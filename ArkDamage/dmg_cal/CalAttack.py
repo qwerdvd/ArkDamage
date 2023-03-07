@@ -828,7 +828,7 @@ async def calculate_attack(
                             log.write(f"本体落地伤害 {damage:.1f}, 不计入总伤害")
                     case "skchr_nearl2_2":
                         if is_skill:
-                            pool[3] += damage * ecount * _nHit
+                            pool[3] += damage * enemy.count * _nHit
                             log.write(
                                 f"[特殊] {display_names[buff_name]}: 落地伤害 {damage:.1f}, 命中 {ecount * _nHit}")
                     case "skchr_nearl2_3":
@@ -837,7 +837,7 @@ async def calculate_attack(
                         else:
                             _scale = buff_list['skill']['value']
                             damage = final_frame['atk'] * _scale * buff_frame['damage_scale']
-                            pool[3] += damage * ecount * _nHit
+                            pool[3] += damage * enemy.count * _nHit
                             log.write(
                                 f"[特殊] {display_names[buff_name]}: 落地伤害 {damage:.1f}, 命中 {ecount * _nHit}")
             case "skchr_lmlee_2":
@@ -861,7 +861,9 @@ async def calculate_attack(
                 damage_pool[2] = 0
                 pool[2] += bb['heal_scale'] * final_frame['maxHp']
             case "skchr_nightm_1":
-                pool[2] += damage_pool[1] * bb["attack@heal_scale"] * min(enemy.count, bb["attack@max_target"])
+                damage = final_frame['atk'] * bb["attack@heal_scale"]
+                pool[2] += damage * dur.hitCount * min(enemy.count, bb["attack@max_target"])
+                log.write_note("以攻击力计算治疗量，而非伤害")
             case "tachr_1024_hbisc2_trait" | "tachr_1020_reed2_trait":
                 pool[2] += damage_pool[1] * Decimal(bb['scale'])
             case "skchr_folnic_2":
@@ -1313,10 +1315,11 @@ async def calculate_attack(
                     log.write("不普攻")
             case "sktok_ironmn_pile3":
                 if is_skill:
-                    pile3_atk = final_frame['atk'] / 2
-                    damage = max(pile3_atk - edef, pile3_atk * 0.05) * buff_frame.damage_scale
-                    log.write(f"范围伤害 {damage:.1f}, 命中 {enemy.count * dur.hitCount}")
-                    pool[0] += damage * enemy.count * dur.hitCount
+                    if enemy.count > 1:
+                        pile3_atk = final_frame['atk'] / 2
+                        damage = max(pile3_atk - edef, pile3_atk * 0.05) * buff_frame.damage_scale
+                        log.write(f"范围伤害 {damage:.1f}, 命中 {enemy.count * dur.hitCount}")
+                        pool[0] += damage * enemy.count * dur.hitCount
             case "skchr_reed2_2":
                 if is_skill:
                     damage = final_frame['atk'] * Decimal(bb['atk_scale']) * Decimal(
@@ -1429,6 +1432,8 @@ async def calculate_attack(
                             log.write_note("全程触发第一天赋")
                             qiubai_t1_hit_skill = dur.hitCount
                             qiubai_t1_hit_extra = int(enemy.count) * 2
+                            qiubai_t1_atk_extra = final_frame['atk'] / final_frame['atk_scale'] - \
+                                                  buff_list['skill']['atk'] * basic_frame['atk']
                         case "skchr_qiubai_3":
                             if options.get('cond'):
                                 qiubai_t1_hit_skill = dur.hitCount
@@ -1452,7 +1457,7 @@ async def calculate_attack(
                     log.write(
                         f"{display_names[buff_name]}: 额外伤害次数: 攻击 {qiubai_t1_hit_skill} 额外 {qiubai_t1_hit_extra}")
                 elif options.get('cond'):
-                    damage = final_frame['atk'] * Decimal(bb['atk_scale']) * Decimal(
+                    damage = final_frame['atk'] / buff_frame['atk_scale'] * Decimal(bb['atk_scale']) * Decimal(
                         1 - emrpct) * Decimal(buff_frame['damage_scale'])
                     pool[1] += damage * dur.hitCount
             case "skchr_qiubai_1":
