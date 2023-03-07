@@ -209,7 +209,7 @@ async def get_attributes(
     # 计算模组
     if char_info.equip_id and char_info.phase >= 2:
         char.attributesKeyFrames = await apply_equip(char, char_info, char.attributesKeyFrames, log)
-        if not await check_specs(char.equipId, "defer"):  # 普通模组，在天赋前添加
+        if not await check_specs(char_info.equip_id, "defer"):  # 普通模组，在天赋前添加
             char.buffList[char_info.equip_id] = char.attributesKeyFrames['equip_blackboard']
 
     # 计算天赋/特性，记为Buff
@@ -251,7 +251,7 @@ async def get_attributes(
                         char.buffList[prefab_key] = blackboard
                         break
 
-    if await check_specs(char.equipId, "defer"):  # 特殊模组，buff在天赋后结算
+    if await check_specs(char_info.equip_id, "defer"):  # 特殊模组，buff在天赋后结算
         char.buffList[char_info.equip_id] = char.attributesKeyFrames['equip_blackboard']
         log.write("延后结算模组效果")
 
